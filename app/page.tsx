@@ -5,7 +5,6 @@ import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Dynamically import the Emoji component from emoji-picker-react with SSR disabled
 const UnifiedEmoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
   { ssr: false },
@@ -53,6 +52,11 @@ const isInStandaloneMode = (): boolean =>
   "standalone" in navigator &&
   (navigator as { standalone?: boolean }).standalone === true;
 
+// Also covers Chrome/Android installed PWA
+const isStandaloneDisplay = (): boolean =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(display-mode: standalone)").matches;
+
 interface PlatformPillar {
   unified: string;
   title: string;
@@ -60,29 +64,29 @@ interface PlatformPillar {
 }
 
 const pillars: PlatformPillar[] = [
+  { unified: "1f4d6", title: "قراءة شرعية للأحداث", badge: "تأصيل شرعي" },
   {
-    unified: "1f4d6", // 📖 Open Book
-    title: "قراءة شرعية للأحداث",
-    badge: "تأصيل شرعي",
-  },
-  {
-    unified: "1f3db-fe0f", // 🏛️ Classical Building
+    unified: "1f3db-fe0f",
     title: "بيان سنن الله في الأقوام",
     badge: "وعي تاريخي",
   },
   {
-    unified: "1f6e1-fe0f", // 🛡️ Shield
+    unified: "1f6e1-fe0f",
     title: "مقاومة التفاهة والغثائية",
     badge: "بناء فكري",
   },
-  {
-    unified: "2696-fe0f", // ⚖️ Scales / Justice
-    title: "بيان سبيل المجرمين",
-    badge: "وعي وتحصين",
-  },
+  { unified: "2696-fe0f", title: "بيان سبيل المجرمين", badge: "وعي وتحصين" },
 ];
 
+// ─── View type ──────────────────────────────────────────────────────────────
+// "loading"   : waiting for client-side detection (prevents hydration flash)
+// "install"   : browser — show download/install page
+// "login"     : installed PWA, no saved profile — show login form
+// "home"      : installed PWA, profile exists — show welcome/home
+type View = "loading" | "install" | "login" | "home";
+
 export default function HomePage() {
+  const [view, setView] = useState<View>("loading");
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [installOutcome, setInstallOutcome] = useState<
@@ -93,42 +97,50 @@ export default function HomePage() {
   const [showPillarsModal, setShowPillarsModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // ── Local Testing Auth States (App / Standalone Only) ───────────────────
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [nameInput, setNameInput] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [countryCodeInput, setCountryCodeInput] = useState("+966");
   const [selectedLocation, setSelectedLocation] = useState<string>("loc-1");
 
+  // ── One-time client detection on mount ─────────────────────────────────
   useEffect(() => {
-    setIsIOSDevice(isIOS());
-    const standalone = isInStandaloneMode();
+    const ios = isIOS();
+    const standalone = isInStandaloneMode() || isStandaloneDisplay();
+
+    setIsIOSDevice(ios);
     setIsStandalone(standalone);
 
-    // Retrieve locally saved testing auth profile
-    const savedProfile = localStorage.getItem("user_profile");
-    if (savedProfile) {
-      try {
-        setUserProfile(JSON.parse(savedProfile));
-      } catch (e) {
-        console.error("Failed to parse user profile from localStorage", e);
-      }
+    // Try to restore saved profile
+    let profile: UserProfile | null = null;
+    try {
+      const raw = localStorage.getItem("user_profile");
+      if (raw) profile = JSON.parse(raw);
+    } catch (e) {
+      console.error("Failed to parse user_profile", e);
     }
 
+    if (profile) setUserProfile(profile);
+
+    // Decide which view to render now that we know the environment
+    if (standalone) {
+      setView(profile ? "home" : "login");
+    } else {
+      setView("install");
+    }
+
+    // Capture Android/Chrome install prompt
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
-
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4000);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   const handleInstallClick = async () => {
@@ -138,13 +150,11 @@ export default function HomePage() {
       const { outcome } = await deferredPrompt.userChoice;
       setInstallOutcome(outcome);
       setDeferredPrompt(null);
-      if (outcome === "accepted") {
-        triggerToast("تم تثبيت التطبيق بنجاح!");
-      }
+      if (outcome === "accepted") triggerToast("تم تثبيت التطبيق بنجاح!");
     } else if (isIOSDevice) {
       triggerToast("اضغط زر المشاركة ⬆️ ثم 'إضافة إلى الشاشة الرئيسية'");
     } else if (isStandalone) {
-      triggerToast("التطبيق مثبت ومفعل حالياً على جهازك");
+      triggerToast("التطبيق مثبت ويعمل بجودة كاملة");
     } else {
       triggerToast("يرجى فتح الصفحة عبر Chrome أو Safari للتثبيت");
     }
@@ -170,6 +180,7 @@ export default function HomePage() {
 
     localStorage.setItem("user_profile", JSON.stringify(profileData));
     setUserProfile(profileData);
+    setView("home");
     triggerToast(`أهلاً بك يا ${profileData.name}`);
   };
 
@@ -178,10 +189,14 @@ export default function HomePage() {
     setUserProfile(null);
     setNameInput("");
     setPhoneInput("");
-    triggerToast("تم تسجيل الخروج واختبار البيانات");
+    setView("login");
+    triggerToast("تم تسجيل الخروج");
   };
 
   const showAndroidInstall = deferredPrompt && installOutcome === "none";
+
+  // ── Render nothing until client detection completes (avoids flash) ──────
+  if (view === "loading") return null;
 
   return (
     <main
@@ -193,7 +208,7 @@ export default function HomePage() {
         fontFamily: "var(--font-sans-light)",
       }}
     >
-      {/* ── Top Ambient Forest Blurred Glow ──────────────────────────────────── */}
+      {/* ── Top Ambient Glow ────────────────────────────────────────────── */}
       <div
         className="absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-48 rounded-full blur-3xl pointer-events-none opacity-25 z-0"
         style={{
@@ -202,7 +217,7 @@ export default function HomePage() {
         }}
       />
 
-      {/* ── Toast Alert Banner ──────────────────────────────────────────────── */}
+      {/* ── Toast ───────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
@@ -217,7 +232,7 @@ export default function HomePage() {
               style={{
                 backgroundColor: "var(--color-darkest)",
                 color: "var(--color-cream)",
-                borderColor: "rgba(255, 255, 255, 0.15)",
+                borderColor: "rgba(255,255,255,0.15)",
               }}
             >
               <div className="flex items-center gap-2.5">
@@ -235,78 +250,177 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* ── Main Hero Content / Local Auth Screen (App Only) ────────────────── */}
-      <motion.section
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="mt-auto mb-6 flex flex-col items-start text-right max-w-md w-full z-10 overflow-y-auto max-h-[75dvh] pr-1"
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="relative mb-3 overflow-hidden flex items-center justify-center shrink-0"
-        >
-          <Image
-            src="/Logo.svg"
-            alt="منصة البنيان المرصوص"
-            width={140}
-            height={140}
-            className="object-cover"
-            priority
-          />
-        </motion.div>
+      {/* ════════════════════════════════════════════════════════════════════
+          VIEW: INSTALL  (browser — not installed yet)
+      ════════════════════════════════════════════════════════════════════ */}
+      {view === "install" && (
+        <>
+          <motion.section
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-auto mb-6 flex flex-col items-start text-right max-w-md w-full z-10"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="mb-4"
+            >
+              <Image
+                src="/Logo.svg"
+                alt="منصة البنيان المرصوص"
+                width={140}
+                height={140}
+                className="object-cover"
+                priority
+              />
+            </motion.div>
 
-        {/* CONDITION: If running as installed App and not logged in locally -> Show Auth Form */}
-        {isStandalone && !userProfile ? (
+            <p
+              className="text-sm leading-relaxed w-full mb-4"
+              style={{
+                fontFamily: "var(--font-sans-light)",
+                color: "var(--color-darkest)",
+              }}
+            >
+              رؤية شرعية لقضايا الأمة المعاصرة وقراءة استقراء تاريخي بعين القرآن
+              والسنة
+            </p>
+
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs border shadow-sm"
+              style={{
+                backgroundColor: "rgba(45, 74, 56, 0.05)",
+                borderColor: "rgba(45, 74, 56, 0.12)",
+                color: "var(--color-darkest)",
+              }}
+            >
+              <UnifiedEmoji unified="1f4f1" size={14} />
+              <span>تجربة تطبيق فوري بدون تحمّيل</span>
+            </motion.div>
+          </motion.section>
+
+          <motion.footer
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-md pb-4 flex flex-col gap-3 z-10"
+          >
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={handleInstallClick}
+              className="w-full py-4 px-5 rounded-2xl text-lg flex items-center justify-center gap-2.5 shadow-lg"
+              style={{
+                fontFamily: "var(--font-sans-medium)",
+                backgroundColor: "var(--color-forest)",
+                color: "var(--color-cream)",
+              }}
+            >
+              <span>
+                {showAndroidInstall
+                  ? "تحميــل التطبيـق"
+                  : isIOSDevice
+                    ? "تحميــل التطبيـق على iOS"
+                    : "تحميـــل التطبيـق"}
+              </span>
+            </motion.button>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowPillarsModal(true)}
+              className="w-full py-3.5 px-5 rounded-2xl text-lg border shadow-sm flex items-center justify-center gap-2.5"
+              style={{
+                fontFamily: "var(--font-sans-light)",
+                borderColor: "rgba(18, 30, 23, 0.2)",
+                backgroundColor: "rgba(255,255,255,0.6)",
+                color: "var(--color-darkest)",
+              }}
+            >
+              <span>أركان المنصة</span>
+            </motion.button>
+          </motion.footer>
+        </>
+      )}
+
+      {/* ════════════════════════════════════════════════════════════════════
+          VIEW: LOGIN  (installed PWA — no profile yet)
+      ════════════════════════════════════════════════════════════════════ */}
+      {view === "login" && (
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-auto mb-6 flex flex-col items-start text-right max-w-md w-full z-10 overflow-y-auto max-h-[85dvh] pr-1"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-4"
+          >
+            <Image
+              src="/Logo.svg"
+              alt="منصة البنيان المرصوص"
+              width={140}
+              height={140}
+              className="object-cover"
+              priority
+            />
+          </motion.div>
+
           <motion.form
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             onSubmit={handleSaveProfile}
             className="w-full flex flex-col gap-3.5 my-2"
           >
-            <div className="flex flex-col gap-1">
+            {/* Name */}
+            <div className="flex flex-col gap-2">
               <span
                 className="text-xs font-bold"
                 style={{
-                  fontFamily: "var(--font-sans-medium)",
+                  fontFamily: "var(--font-sans-light)",
                   color: "var(--color-darkest)",
                 }}
               >
-                الاسم الكريم
+                الاسـم الثنائــي{" "}
               </span>
               <input
                 type="text"
                 placeholder="أدخل اسمك هنا"
                 value={nameInput}
                 onChange={(e) => setNameInput(e.target.value)}
-                className="w-full py-3 px-4 rounded-xl text-xs border outline-none transition-all focus:border-[var(--color-forest)] bg-white/70"
+                className="w-full py-2 px-3 rounded text-xs border outline-none transition-all focus:border-[var(--color-forest)] bg-white/70"
                 style={{
-                  borderColor: "rgba(18, 30, 23, 0.15)",
+                  borderColor: "rgba(18,30,23,0.15)",
                   color: "var(--color-darkest)",
                   fontFamily: "var(--font-sans-light)",
                 }}
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            {/* Phone */}
+            <div className="flex flex-col gap-2">
               <span
                 className="text-xs font-bold"
                 style={{
-                  fontFamily: "var(--font-sans-medium)",
+                  fontFamily: "var(--font-sans-light)",
                   color: "var(--color-darkest)",
                 }}
               >
-                رقم الهاتف
+                رقـم الهاتِـف
               </span>
-              <div className="flex gap-2 dir-ltr">
+              <div className="flex gap-2">
                 <select
                   value={countryCodeInput}
                   onChange={(e) => setCountryCodeInput(e.target.value)}
-                  className="py-3 px-2 rounded-xl text-xs border outline-none bg-white/70"
+                  className="py-2 px-2 rounded text-xs border outline-none bg-white/70"
                   style={{
-                    borderColor: "rgba(18, 30, 23, 0.15)",
+                    borderColor: "rgba(18,30,23,0.15)",
                     color: "var(--color-darkest)",
                     fontFamily: "var(--font-sans-medium)",
                   }}
@@ -317,15 +431,14 @@ export default function HomePage() {
                     </option>
                   ))}
                 </select>
-
                 <input
                   type="tel"
                   placeholder="50XXXXXXX"
                   value={phoneInput}
                   onChange={(e) => setPhoneInput(e.target.value)}
-                  className="w-full py-3 px-4 rounded-xl text-xs border outline-none text-right transition-all focus:border-[var(--color-forest)] bg-white/70"
+                  className="w-full py-2 px-3 rounded text-xs border outline-none text-right transition-all focus:border-[var(--color-forest)] bg-white/70"
                   style={{
-                    borderColor: "rgba(18, 30, 23, 0.15)",
+                    borderColor: "rgba(18,30,23,0.15)",
                     color: "var(--color-darkest)",
                     fontFamily: "var(--font-sans-light)",
                   }}
@@ -333,12 +446,12 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Location Selector (اختر المصر الذي تعيش فيه) */}
-            <div className="flex flex-col gap-1.5 mt-1">
+            {/* Location */}
+            <div className="flex flex-col gap-1.5 mt-2">
               <span
-                className="text-xs font-bold"
+                className="text-sm mb-1"
                 style={{
-                  fontFamily: "var(--font-sans-medium)",
+                  fontFamily: "var(--font-sans-light)",
                   color: "var(--color-darkest)",
                 }}
               >
@@ -352,36 +465,22 @@ export default function HomePage() {
                       key={loc.id}
                       type="button"
                       onClick={() => setSelectedLocation(loc.id)}
-                      className={`p-3 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
-                        isSelected ? "shadow-md scale-[1.02]" : "opacity-70"
-                      }`}
+                      className={`border border-[1px] w-fit`}
                       style={{
-                        backgroundColor: isSelected
-                          ? "rgba(45, 74, 56, 0.08)"
-                          : "rgba(255, 255, 255, 0.5)",
                         borderColor: isSelected
                           ? "var(--color-forest)"
-                          : "rgba(18, 30, 23, 0.12)",
+                          : "rgba(18,30,23,0.12)",
                       }}
                     >
-                      <div className="relative w-12 h-12 flex items-center justify-center">
+                      <div className="flex items-center justify-center">
                         <Image
                           src={loc.image}
                           alt={loc.name}
-                          width={48}
-                          height={48}
+                          width={200}
+                          height={200}
                           className="object-contain"
                         />
                       </div>
-                      <span
-                        className="text-[11px] font-bold"
-                        style={{
-                          fontFamily: "var(--font-sans-medium)",
-                          color: "var(--color-darkest)",
-                        }}
-                      >
-                        {loc.name}
-                      </span>
                     </button>
                   );
                 })}
@@ -391,7 +490,7 @@ export default function HomePage() {
             <motion.button
               whileTap={{ scale: 0.97 }}
               type="submit"
-              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold mt-2 shadow-md transition-all"
+              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold mt-2 shadow-md"
               style={{
                 backgroundColor: "var(--color-forest)",
                 color: "var(--color-cream)",
@@ -401,11 +500,38 @@ export default function HomePage() {
               دخول التطبيق
             </motion.button>
           </motion.form>
-        ) : (
-          /* Normal Landing / Logged In View */
-          <>
+        </motion.section>
+      )}
+
+      {/* ════════════════════════════════════════════════════════════════════
+          VIEW: HOME  (installed PWA — profile exists)
+      ════════════════════════════════════════════════════════════════════ */}
+      {view === "home" && userProfile && (
+        <>
+          <motion.section
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-auto mb-6 flex flex-col items-start text-right max-w-md w-full z-10"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="mb-3"
+            >
+              <Image
+                src="/Logo.svg"
+                alt="منصة البنيان المرصوص"
+                width={140}
+                height={140}
+                className="object-cover"
+                priority
+              />
+            </motion.div>
+
             <p
-              className="text-sm leading-relaxed w-full mb-2"
+              className="text-sm leading-relaxed w-full mb-3"
               style={{
                 fontFamily: "var(--font-sans-light)",
                 color: "var(--color-darkest)",
@@ -414,119 +540,74 @@ export default function HomePage() {
               رؤية شرعية لقضايا الأمة المعاصرة وقراءة استقراء تاريخي بعين القرآن
               والسنة
             </p>
-
-            {userProfile && (
-              <div className="w-full p-3 rounded-xl border mb-3 bg-white/50 border-black/10 flex items-center justify-between">
-                <div>
-                  <p
-                    className="text-xs font-bold"
-                    style={{ color: "var(--color-darkest)" }}
-                  >
-                    مرحباً، {userProfile.name}
-                  </p>
-                  <p
-                    className="text-[10px] opacity-75"
-                    style={{ color: "var(--color-forest)" }}
-                  >
-                    {userProfile.countryCode} {userProfile.phone} |{" "}
-                    {
-                      locationsList.find((l) => l.id === userProfile.location)
-                        ?.name
-                    }
-                  </p>
-                </div>
-                <button
-                  onClick={handleClearProfile}
-                  className="text-[10px] underline text-red-600 px-2"
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-1 text-xs mb-2"
+              style={{
+                color: "var(--color-forest)",
+              }}
+            >
+              <UnifiedEmoji unified="2705" size={14} />
+              <span>التطبيق مثبت ويعمل بجودة كاملة</span>
+            </motion.div>
+            {/* Profile card */}
+            <div className="w-full p-3 rounded-xl border mb-3 bg-white/50 border-black/10 flex items-center justify-between">
+              <div>
+                <p
+                  className="text-xs font-bold"
+                  style={{ color: "var(--color-darkest)" }}
                 >
-                  إعادة تعيين
-                </button>
+                  مرحباً، {userProfile.name}
+                </p>
+                {/* <p
+                  className="text-[10px] opacity-75"
+                  style={{ color: "var(--color-forest)" }}
+                >
+                  {userProfile.countryCode} {userProfile.phone} |{" "}
+                  {
+                    locationsList.find((l) => l.id === userProfile.location)
+                      ?.name
+                  }
+                </p> */}
               </div>
-            )}
-
-            {isStandalone ? (
-              <motion.div
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs border shadow-sm"
-                style={{
-                  backgroundColor: "rgba(45, 74, 56, 0.08)",
-                  borderColor: "rgba(45, 74, 56, 0.15)",
-                  color: "var(--color-forest)",
-                }}
+              {/* <button
+                onClick={handleClearProfile}
+                className="text-[10px] underline text-red-600 px-2"
               >
-                <UnifiedEmoji unified="2705" size={14} />
-                <span>التطبيق مثبت ويعمل بجودة كاملة</span>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs border shadow-sm"
-                style={{
-                  backgroundColor: "rgba(45, 74, 56, 0.05)",
-                  borderColor: "rgba(45, 74, 56, 0.12)",
-                  color: "var(--color-darkest)",
-                }}
-              >
-                <UnifiedEmoji unified="1f4f1" size={14} />
-                <span>تجربة تطبيق فوري بدون تحمّيل</span>
-              </motion.div>
-            )}
-          </>
-        )}
-      </motion.section>
+                إعادة تعيين
+              </button> */}
+            </div>
+          </motion.section>
 
-      {/* ── Bottom Floating Action Zone (Flex Column - Stored at Bottom) ────── */}
-      <motion.footer
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md pb-4 flex flex-col gap-3 z-10"
-      >
-        {/* Button 1: Download Action with Framer Tap Effect */}
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={handleInstallClick}
-          className="w-full py-4 px-5 rounded-2xl text-lg flex items-center justify-center gap-2.5 shadow-lg transition-all"
-          style={{
-            fontFamily: "var(--font-sans-medium)",
-            backgroundColor: "var(--color-forest)",
-            color: "var(--color-cream)",
-          }}
-        >
-          <span>
-            {showAndroidInstall
-              ? "تحميــل التطبيـق"
-              : isIOSDevice && !isStandalone
-                ? "تحميــل التطبيـق على iOS"
-                : "تحميـــل التطبيـق"}
-          </span>
-        </motion.button>
+          <motion.footer
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-md pb-4 flex flex-col gap-3 z-10"
+          >
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowPillarsModal(true)}
+              className="w-full py-3.5 px-5 rounded-2xl text-lg border shadow-sm flex items-center justify-center gap-2.5"
+              style={{
+                fontFamily: "var(--font-sans-light)",
+                borderColor: "rgba(18,30,23,0.2)",
+                backgroundColor: "rgba(255,255,255,0.6)",
+                color: "var(--color-darkest)",
+              }}
+            >
+              <span>أركان المنصة</span>
+            </motion.button>
+          </motion.footer>
+        </>
+      )}
 
-        {/* Button 2: Secondary Action (Platform Pillars) */}
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => setShowPillarsModal(true)}
-          className="w-full py-3.5 px-5 rounded-2xl text-lg font-bold border shadow-sm flex items-center justify-center gap-2.5 transition-all"
-          style={{
-            fontFamily: "var(--font-sans-light)",
-            borderColor: "rgba(18, 30, 23, 0.2)",
-            backgroundColor: "rgba(255, 255, 255, 0.6)",
-            color: "var(--color-darkest)",
-          }}
-        >
-          <span>أركان المنصة</span>
-        </motion.button>
-      </motion.footer>
-
-      {/* ── Pillars Overlay Modal with Framer Motion AnimatePresence ─────────── */}
+      {/* ── Pillars Modal (shared across all views) ─────────────────────── */}
       <AnimatePresence>
         {showPillarsModal && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-            {/* Modal Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -534,8 +615,6 @@ export default function HomePage() {
               onClick={() => setShowPillarsModal(false)}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
-
-            {/* Modal Box */}
             <motion.div
               initial={{ opacity: 0, y: 100, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -544,7 +623,7 @@ export default function HomePage() {
               className="w-full max-w-sm rounded-3xl p-6 border shadow-2xl flex flex-col gap-5 text-right relative z-10"
               style={{
                 backgroundColor: "var(--color-cream)",
-                borderColor: "rgba(18, 30, 23, 0.15)",
+                borderColor: "rgba(18,30,23,0.15)",
                 color: "var(--color-darkest)",
               }}
             >
@@ -560,7 +639,7 @@ export default function HomePage() {
                 </span>
                 <button
                   onClick={() => setShowPillarsModal(false)}
-                  className="w-7 h-7 rounded-full bg-black/5 flex items-center justify-center text-xs text-[var(--color-darkest)] hover:bg-black/10"
+                  className="w-7 h-7 rounded-full bg-black/5 flex items-center justify-center text-xs hover:bg-black/10"
                 >
                   ✕
                 </button>
@@ -576,9 +655,7 @@ export default function HomePage() {
                     className="py-3.5 flex items-center justify-between gap-3 shadow-sm"
                   >
                     <div className="flex items-center gap-3">
-                      <div>
-                        <UnifiedEmoji unified={pillar.unified} size={24} />
-                      </div>
+                      <UnifiedEmoji unified={pillar.unified} size={24} />
                       <span
                         className="text-xs"
                         style={{ fontFamily: "var(--font-sans-light)" }}
@@ -589,8 +666,8 @@ export default function HomePage() {
                     <span
                       className="text-[12px] px-2.5 py-0.5 rounded-full border"
                       style={{
-                        borderColor: "rgba(45, 74, 56, 0.2)",
-                        backgroundColor: "rgba(45, 74, 56, 0.05)",
+                        borderColor: "rgba(45,74,56,0.2)",
+                        backgroundColor: "rgba(45,74,56,0.05)",
                         color: "var(--color-forest)",
                       }}
                     >
@@ -600,13 +677,12 @@ export default function HomePage() {
                 ))}
               </div>
 
-              {/* iOS Helper instructions inside modal */}
               {isIOSDevice && !isStandalone && (
                 <div
                   className="p-3 rounded-xl border text-[11px] leading-relaxed flex items-start gap-2"
                   style={{
-                    backgroundColor: "rgba(45, 74, 56, 0.05)",
-                    borderColor: "rgba(45, 74, 56, 0.15)",
+                    backgroundColor: "rgba(45,74,56,0.05)",
+                    borderColor: "rgba(45,74,56,0.15)",
                     color: "var(--color-forest)",
                   }}
                 >
