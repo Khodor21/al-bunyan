@@ -16,6 +16,33 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+interface LocationOption {
+  id: string;
+  name: string;
+  image: string;
+}
+
+interface UserProfile {
+  name: string;
+  phone: string;
+  countryCode: string;
+  location: string;
+}
+
+const locationsList: LocationOption[] = [
+  { id: "loc-1", name: "المصر الأول", image: "/cities/جزيرة العرب.svg" },
+  { id: "loc-2", name: "المصر الثاني", image: "/cities/بلاد الشام.svg" },
+];
+
+const countryCodes = [
+  { code: "+966", label: "🇸🇦 +966" },
+  { code: "+965", label: "🇰🇼 +965" },
+  { code: "+971", label: "🇦🇪 +971" },
+  { code: "+962", label: "🇯🇴 +962" },
+  { code: "+961", label: "🇱🇧 +961" },
+  { code: "+20", label: "🇪🇬 +20" },
+];
+
 const isIOS = (): boolean =>
   typeof navigator !== "undefined" &&
   (/iphone|ipad|ipod/i.test(navigator.userAgent) ||
@@ -66,9 +93,27 @@ export default function HomePage() {
   const [showPillarsModal, setShowPillarsModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // ── Local Testing Auth States (App / Standalone Only) ───────────────────
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [nameInput, setNameInput] = useState("");
+  const [phoneInput, setPhoneInput] = useState("");
+  const [countryCodeInput, setCountryCodeInput] = useState("+966");
+  const [selectedLocation, setSelectedLocation] = useState<string>("loc-1");
+
   useEffect(() => {
     setIsIOSDevice(isIOS());
-    setIsStandalone(isInStandaloneMode());
+    const standalone = isInStandaloneMode();
+    setIsStandalone(standalone);
+
+    // Retrieve locally saved testing auth profile
+    const savedProfile = localStorage.getItem("user_profile");
+    if (savedProfile) {
+      try {
+        setUserProfile(JSON.parse(savedProfile));
+      } catch (e) {
+        console.error("Failed to parse user profile from localStorage", e);
+      }
+    }
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -103,6 +148,37 @@ export default function HomePage() {
     } else {
       triggerToast("يرجى فتح الصفحة عبر Chrome أو Safari للتثبيت");
     }
+  };
+
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nameInput.trim()) {
+      triggerToast("يرجى إدخال الاسم الكريم");
+      return;
+    }
+    if (!phoneInput.trim()) {
+      triggerToast("يرجى إدخال رقم الهاتف");
+      return;
+    }
+
+    const profileData: UserProfile = {
+      name: nameInput.trim(),
+      phone: phoneInput.trim(),
+      countryCode: countryCodeInput,
+      location: selectedLocation,
+    };
+
+    localStorage.setItem("user_profile", JSON.stringify(profileData));
+    setUserProfile(profileData);
+    triggerToast(`أهلاً بك يا ${profileData.name}`);
+  };
+
+  const handleClearProfile = () => {
+    localStorage.removeItem("user_profile");
+    setUserProfile(null);
+    setNameInput("");
+    setPhoneInput("");
+    triggerToast("تم تسجيل الخروج واختبار البيانات");
   };
 
   const showAndroidInstall = deferredPrompt && installOutcome === "none";
@@ -159,70 +235,247 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* ── Main Hero Content Card (Animate In) ─────────────────────────────── */}
+      {/* ── Main Hero Content / Local Auth Screen (App Only) ────────────────── */}
       <motion.section
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="mt-auto mb-8 flex flex-col items-start text-right max-w-md w-full z-10"
+        className="mt-auto mb-6 flex flex-col items-start text-right max-w-md w-full z-10 overflow-y-auto max-h-[75dvh] pr-1"
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="relative mb-4 overflow-hidden flex items-center justify-center"
+          className="relative mb-3 overflow-hidden flex items-center justify-center shrink-0"
         >
           <Image
             src="/Logo.svg"
             alt="منصة البنيان المرصوص"
-            width={200}
-            height={200}
+            width={140}
+            height={140}
             className="object-cover"
             priority
           />
         </motion.div>
 
-        <p
-          className="text-sm leading-relaxed w-full mb-2"
-          style={{
-            fontFamily: "var(--font-sans-light)",
-            color: "var(--color-darkest)",
-          }}
-        >
-          رؤية شرعية لقضايا الأمة المعاصرة وقراءة استقراء تاريخي بعين القرآن
-          والسنة
-        </p>
+        {/* CONDITION: If running as installed App and not logged in locally -> Show Auth Form */}
+        {isStandalone && !userProfile ? (
+          <motion.form
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            onSubmit={handleSaveProfile}
+            className="w-full flex flex-col gap-3.5 my-2"
+          >
+            <div className="flex flex-col gap-1">
+              <span
+                className="text-xs font-bold"
+                style={{
+                  fontFamily: "var(--font-sans-medium)",
+                  color: "var(--color-darkest)",
+                }}
+              >
+                الاسم الكريم
+              </span>
+              <input
+                type="text"
+                placeholder="أدخل اسمك هنا"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                className="w-full py-3 px-4 rounded-xl text-xs border outline-none transition-all focus:border-[var(--color-forest)] bg-white/70"
+                style={{
+                  borderColor: "rgba(18, 30, 23, 0.15)",
+                  color: "var(--color-darkest)",
+                  fontFamily: "var(--font-sans-light)",
+                }}
+              />
+            </div>
 
-        {isStandalone ? (
-          <motion.div
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs border shadow-sm"
-            style={{
-              backgroundColor: "rgba(45, 74, 56, 0.08)",
-              borderColor: "rgba(45, 74, 56, 0.15)",
-              color: "var(--color-forest)",
-            }}
-          >
-            <UnifiedEmoji unified="2705" size={14} />
-            <span>التطبيق مثبت ويعمل بجودة كاملة</span>
-          </motion.div>
+            <div className="flex flex-col gap-1">
+              <span
+                className="text-xs font-bold"
+                style={{
+                  fontFamily: "var(--font-sans-medium)",
+                  color: "var(--color-darkest)",
+                }}
+              >
+                رقم الهاتف
+              </span>
+              <div className="flex gap-2 dir-ltr">
+                <select
+                  value={countryCodeInput}
+                  onChange={(e) => setCountryCodeInput(e.target.value)}
+                  className="py-3 px-2 rounded-xl text-xs border outline-none bg-white/70"
+                  style={{
+                    borderColor: "rgba(18, 30, 23, 0.15)",
+                    color: "var(--color-darkest)",
+                    fontFamily: "var(--font-sans-medium)",
+                  }}
+                >
+                  {countryCodes.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="tel"
+                  placeholder="50XXXXXXX"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  className="w-full py-3 px-4 rounded-xl text-xs border outline-none text-right transition-all focus:border-[var(--color-forest)] bg-white/70"
+                  style={{
+                    borderColor: "rgba(18, 30, 23, 0.15)",
+                    color: "var(--color-darkest)",
+                    fontFamily: "var(--font-sans-light)",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Location Selector (اختر المصر الذي تعيش فيه) */}
+            <div className="flex flex-col gap-1.5 mt-1">
+              <span
+                className="text-xs font-bold"
+                style={{
+                  fontFamily: "var(--font-sans-medium)",
+                  color: "var(--color-darkest)",
+                }}
+              >
+                اختر المصر الذي تعيش فيه
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                {locationsList.map((loc) => {
+                  const isSelected = selectedLocation === loc.id;
+                  return (
+                    <button
+                      key={loc.id}
+                      type="button"
+                      onClick={() => setSelectedLocation(loc.id)}
+                      className={`p-3 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
+                        isSelected ? "shadow-md scale-[1.02]" : "opacity-70"
+                      }`}
+                      style={{
+                        backgroundColor: isSelected
+                          ? "rgba(45, 74, 56, 0.08)"
+                          : "rgba(255, 255, 255, 0.5)",
+                        borderColor: isSelected
+                          ? "var(--color-forest)"
+                          : "rgba(18, 30, 23, 0.12)",
+                      }}
+                    >
+                      <div className="relative w-12 h-12 flex items-center justify-center">
+                        <Image
+                          src={loc.image}
+                          alt={loc.name}
+                          width={48}
+                          height={48}
+                          className="object-contain"
+                        />
+                      </div>
+                      <span
+                        className="text-[11px] font-bold"
+                        style={{
+                          fontFamily: "var(--font-sans-medium)",
+                          color: "var(--color-darkest)",
+                        }}
+                      >
+                        {loc.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              type="submit"
+              className="w-full py-3.5 px-4 rounded-xl text-xs font-bold mt-2 shadow-md transition-all"
+              style={{
+                backgroundColor: "var(--color-forest)",
+                color: "var(--color-cream)",
+                fontFamily: "var(--font-sans-bold)",
+              }}
+            >
+              دخول التطبيق
+            </motion.button>
+          </motion.form>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs border shadow-sm"
-            style={{
-              backgroundColor: "rgba(45, 74, 56, 0.05)",
-              borderColor: "rgba(45, 74, 56, 0.12)",
-              color: "var(--color-darkest)",
-            }}
-          >
-            <UnifiedEmoji unified="1f4f1" size={14} />
-            <span>تجربة تطبيق فوري بدون تحمـيل</span>
-          </motion.div>
+          /* Normal Landing / Logged In View */
+          <>
+            <p
+              className="text-sm leading-relaxed w-full mb-2"
+              style={{
+                fontFamily: "var(--font-sans-light)",
+                color: "var(--color-darkest)",
+              }}
+            >
+              رؤية شرعية لقضايا الأمة المعاصرة وقراءة استقراء تاريخي بعين القرآن
+              والسنة
+            </p>
+
+            {userProfile && (
+              <div className="w-full p-3 rounded-xl border mb-3 bg-white/50 border-black/10 flex items-center justify-between">
+                <div>
+                  <p
+                    className="text-xs font-bold"
+                    style={{ color: "var(--color-darkest)" }}
+                  >
+                    مرحباً، {userProfile.name}
+                  </p>
+                  <p
+                    className="text-[10px] opacity-75"
+                    style={{ color: "var(--color-forest)" }}
+                  >
+                    {userProfile.countryCode} {userProfile.phone} |{" "}
+                    {
+                      locationsList.find((l) => l.id === userProfile.location)
+                        ?.name
+                    }
+                  </p>
+                </div>
+                <button
+                  onClick={handleClearProfile}
+                  className="text-[10px] underline text-red-600 px-2"
+                >
+                  إعادة تعيين
+                </button>
+              </div>
+            )}
+
+            {isStandalone ? (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs border shadow-sm"
+                style={{
+                  backgroundColor: "rgba(45, 74, 56, 0.08)",
+                  borderColor: "rgba(45, 74, 56, 0.15)",
+                  color: "var(--color-forest)",
+                }}
+              >
+                <UnifiedEmoji unified="2705" size={14} />
+                <span>التطبيق مثبت ويعمل بجودة كاملة</span>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs border shadow-sm"
+                style={{
+                  backgroundColor: "rgba(45, 74, 56, 0.05)",
+                  borderColor: "rgba(45, 74, 56, 0.12)",
+                  color: "var(--color-darkest)",
+                }}
+              >
+                <UnifiedEmoji unified="1f4f1" size={14} />
+                <span>تجربة تطبيق فوري بدون تحمّيل</span>
+              </motion.div>
+            )}
+          </>
         )}
       </motion.section>
 
@@ -237,7 +490,7 @@ export default function HomePage() {
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={handleInstallClick}
-          className="w-full py-3 px-5 rounded-2xl text-lg flex items-center justify-center gap-2.5 shadow-lg transition-all"
+          className="w-full py-4 px-5 rounded-2xl text-lg flex items-center justify-center gap-2.5 shadow-lg transition-all"
           style={{
             fontFamily: "var(--font-sans-medium)",
             backgroundColor: "var(--color-forest)",
@@ -246,10 +499,10 @@ export default function HomePage() {
         >
           <span>
             {showAndroidInstall
-              ? "تحميــل التطبيــق"
+              ? "تحميــل التطبيـق"
               : isIOSDevice && !isStandalone
                 ? "تحميــل التطبيـق على iOS"
-                : "تحميـــل التطبيــق"}
+                : "تحميـــل التطبيـق"}
           </span>
         </motion.button>
 
@@ -257,7 +510,7 @@ export default function HomePage() {
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => setShowPillarsModal(true)}
-          className="w-full py-2 px-5 rounded-2xl text-lg font-bold border shadow-sm flex items-center justify-center gap-2.5 transition-all"
+          className="w-full py-3.5 px-5 rounded-2xl text-lg font-bold border shadow-sm flex items-center justify-center gap-2.5 transition-all"
           style={{
             fontFamily: "var(--font-sans-light)",
             borderColor: "rgba(18, 30, 23, 0.2)",
