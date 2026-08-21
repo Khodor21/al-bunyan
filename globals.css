@@ -1,0 +1,97 @@
+/* ─── Font Declarations ─────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: "Thmanya-serif-Light";
+  src: url("/fonts/Thmanya-serif-Light.otf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanya-serif-Bold";
+  src: url("/fonts/Thmanya-serif-Bold.otf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanya-sans-Light";
+  src: url("/fonts/Thmanya-sans-Light.otf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanya-sans-Medium";
+  src: url("/fonts/Thmanya-sans-Medium.otf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Thmanya-sans-Bold";
+  src: url("/fonts/Thmanya-sans-Bold.otf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ─── CSS Variables ─────────────────────────────────────────────────────── */
+
+:root {
+  /* Font families */
+  --font-serif-light: "Thmanya-serif-Light", Georgia, serif;
+  --font-serif-bold: "Thmanya-serif-Bold", Georgia, serif;
+  --font-sans-light: "Thmanya-sans-Light", system-ui, sans-serif;
+  --font-sans-medium: "Thmanya-sans-Medium", system-ui, sans-serif;
+  --font-sans-bold: "Thmanya-sans-Bold", system-ui, sans-serif;
+
+  /* Color palette */
+  --color-darkest: #15170d;
+  --color-forest: #5a653b;
+  --color-sage: #c0ce83;
+  --color-cream: #fcffeb;
+}
+ 
+
+/* ─── Tailwind Base ─────────────────────────────────────────────────────── */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Styles ───────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans-light);
+  background-color: var(--color-cream);
+  color: var(--color-darkest);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
