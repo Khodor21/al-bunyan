@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import type { AuthUser } from "@/types/auth";
+import QuotesView from "./components/QuotesView"; // Added import
 
 const UnifiedEmoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
@@ -39,7 +40,6 @@ const isStandaloneDisplay = (): boolean =>
 type View = "loading" | "install" | "login" | "home";
 
 // ─── Home screen ─────────────────────────────────────────────────────────────
-// Replace the body of this component with your actual app content.
 function HomeScreen({
   user,
   onLogout,
@@ -47,105 +47,144 @@ function HomeScreen({
   user: AuthUser;
   onLogout: () => void;
 }) {
+  const [showQuotes, setShowQuotes] = useState(false);
+
   return (
-    <div
-      className="h-dvh w-screen flex flex-col relative overflow-hidden p-6"
-      dir="rtl"
-      style={{
-        backgroundColor: "var(--color-cream)",
-        color: "var(--color-darkest)",
-      }}
-    >
-      {/* Ambient glow */}
+    <>
       <div
-        className="absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-48 rounded-full blur-3xl pointer-events-none opacity-20 z-0"
+        className="h-dvh w-screen flex flex-col relative overflow-hidden p-6"
+        dir="rtl"
         style={{
-          background:
-            "radial-gradient(ellipse at top, var(--color-forest) 0%, transparent 75%)",
+          backgroundColor: "var(--color-cream)",
+          color: "var(--color-darkest)",
         }}
-      />
-
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="flex-1 flex flex-col justify-end max-w-md w-full z-10 pb-6"
       >
-        {/* Installed badge */}
+        {/* Ambient glow */}
         <div
-          className="inline-flex items-center gap-1.5 text-xs mb-5 self-start"
+          className="absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-48 rounded-full blur-3xl pointer-events-none opacity-20 z-0"
           style={{
-            color: "var(--color-forest)",
-            fontFamily: "var(--font-sans-light)",
+            background:
+              "radial-gradient(ellipse at top, var(--color-forest) 0%, transparent 75%)",
           }}
-        >
-          <UnifiedEmoji unified="2705" size={13} />
-          <span>التطبيق مثبت ويعمل بجودة كاملة</span>
-        </div>
+        />
 
-        {/* User card */}
-        <div
-          className="w-full p-4 rounded-2xl border mb-4 flex items-center justify-between"
-          style={{
-            backgroundColor: "rgba(255,255,255,0.55)",
-            borderColor: "rgba(18,30,23,0.08)",
-          }}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="flex-1 flex flex-col justify-end max-w-md w-full mx-auto z-10 pb-6"
         >
-          <div>
-            <p
-              className="text-sm"
-              style={{
-                fontFamily: "var(--font-sans-light)",
-                color: "var(--color-darkest)",
-              }}
-            >
-              مرحباً،{" "}
-              <span style={{ fontFamily: "var(--font-sans-medium)" }}>
-                {user.name}
-              </span>
-            </p>
-            <p
-              className="text-[11px] mt-0.5 opacity-50"
-              style={{
-                fontFamily: "var(--font-sans-light)",
-                color: "var(--color-darkest)",
-              }}
-            >
-              {user.location} · {user.role}
-            </p>
-          </div>
-
-          {/* Role badge */}
-          <span
-            className="text-[10px] px-2 py-0.5 rounded-full border"
+          {/* Installed badge */}
+          <div
+            className="inline-flex items-center gap-1.5 text-xs mb-5 self-start"
             style={{
-              borderColor: "rgba(90,101,59,0.2)",
-              backgroundColor: "rgba(90,101,59,0.06)",
               color: "var(--color-forest)",
               fontFamily: "var(--font-sans-light)",
             }}
           >
-            {user.role === "admin"
-              ? "مشرف"
-              : user.role === "publisher"
-                ? "ناشر"
-                : "مستخدم"}
-          </span>
-        </div>
+            <UnifiedEmoji unified="2705" size={13} />
+            <span>التطبيق مثبت ويعمل بجودة كاملة</span>
+          </div>
 
-        {/* Logout */}
-        <button
-          onClick={onLogout}
-          className="text-[11px] underline opacity-35 self-start"
-          style={{
-            fontFamily: "var(--font-sans-light)",
-            color: "var(--color-darkest)",
-          }}
-        >
-          تسجيل الخروج
-        </button>
-      </motion.div>
-    </div>
+          {/* User card */}
+          <div
+            className="w-full p-4 rounded-2xl border mb-4 flex items-center justify-between shadow-sm"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.55)",
+              borderColor: "rgba(18,30,23,0.08)",
+            }}
+          >
+            <div>
+              <p
+                className="text-sm"
+                style={{
+                  fontFamily: "var(--font-sans-light)",
+                  color: "var(--color-darkest)",
+                }}
+              >
+                مرحباً،{" "}
+                <span style={{ fontFamily: "var(--font-sans-medium)" }}>
+                  {user.name}
+                </span>
+              </p>
+              <p
+                className="text-[11px] mt-0.5 opacity-50"
+                style={{
+                  fontFamily: "var(--font-sans-light)",
+                  color: "var(--color-darkest)",
+                }}
+              >
+                {user.location} · {user.role}
+              </p>
+            </div>
+
+            {/* Role badge */}
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full border"
+              style={{
+                borderColor: "rgba(90,101,59,0.2)",
+                backgroundColor: "rgba(90,101,59,0.06)",
+                color: "var(--color-forest)",
+                fontFamily: "var(--font-sans-light)",
+              }}
+            >
+              {user.role === "admin"
+                ? "مشرف"
+                : user.role === "publisher"
+                  ? "ناشر"
+                  : "مستخدم"}
+            </span>
+          </div>
+
+          {/* Quotes Action Button */}
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowQuotes(true)}
+            className="w-full p-4 rounded-2xl border mb-6 flex items-center justify-between transition-colors hover:bg-white/40 shadow-sm group"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.3)",
+              borderColor: "rgba(18,30,23,0.08)",
+              color: "var(--color-darkest)",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-sm"
+                style={{ color: "var(--color-forest)" }}
+              >
+                <UnifiedEmoji unified="1f4dc" size={16} />
+              </div>
+              <span style={{ fontFamily: "var(--font-sans-medium)" }}>
+                اقتباسات
+              </span>
+            </div>
+            <span className="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity flex items-center gap-1 font-mono">
+              تصفح الآن
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </span>
+          </motion.button>
+
+          {/* Logout */}
+          <button
+            onClick={onLogout}
+            className="text-[11px] underline opacity-35 self-start hover:opacity-100 transition-opacity"
+            style={{
+              fontFamily: "var(--font-sans-light)",
+              color: "var(--color-darkest)",
+            }}
+          >
+            تسجيل الخروج
+          </button>
+        </motion.div>
+      </div>
+
+      {/* ── Fullscreen Quotes View Overlay ─────────────────────────────────── */}
+      <AnimatePresence>
+        {showQuotes && <QuotesView onClose={() => setShowQuotes(false)} />}
+      </AnimatePresence>
+    </>
   );
 }
 
