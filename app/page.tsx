@@ -3,14 +3,13 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserProfile } from "./components/LoginView";
+import type { AuthUser } from "@/types/auth";
 
 const UnifiedEmoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
   { ssr: false },
 );
 
-// Lazy-load each view so the install bundle stays small
 const InstallView = dynamic(() => import("./components/InstallView"), {
   ssr: false,
 });
@@ -39,14 +38,14 @@ const isStandaloneDisplay = (): boolean =>
 
 type View = "loading" | "install" | "login" | "home";
 
-// ─── Minimal home screen shown after login ────────────────────────────────────
-// Replace the content inside here as the app grows.
+// ─── Home screen ─────────────────────────────────────────────────────────────
+// Replace the body of this component with your actual app content.
 function HomeScreen({
-  userProfile,
-  onReset,
+  user,
+  onLogout,
 }: {
-  userProfile: UserProfile;
-  onReset: () => void;
+  user: AuthUser;
+  onLogout: () => void;
 }) {
   return (
     <div
@@ -72,9 +71,9 @@ function HomeScreen({
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="flex-1 flex flex-col justify-end max-w-md w-full z-10 pb-6"
       >
-        {/* Status badge */}
+        {/* Installed badge */}
         <div
-          className="inline-flex items-center gap-1.5 text-xs mb-6 self-start"
+          className="inline-flex items-center gap-1.5 text-xs mb-5 self-start"
           style={{
             color: "var(--color-forest)",
             fontFamily: "var(--font-sans-light)",
@@ -84,95 +83,145 @@ function HomeScreen({
           <span>التطبيق مثبت ويعمل بجودة كاملة</span>
         </div>
 
-        {/* Welcome card */}
+        {/* User card */}
         <div
-          className="w-full p-4 rounded-2xl border mb-4"
+          className="w-full p-4 rounded-2xl border mb-4 flex items-center justify-between"
           style={{
             backgroundColor: "rgba(255,255,255,0.55)",
             borderColor: "rgba(18,30,23,0.08)",
           }}
         >
-          <p
-            className="text-sm mb-0.5"
+          <div>
+            <p
+              className="text-sm"
+              style={{
+                fontFamily: "var(--font-sans-light)",
+                color: "var(--color-darkest)",
+              }}
+            >
+              مرحباً،{" "}
+              <span style={{ fontFamily: "var(--font-sans-medium)" }}>
+                {user.name}
+              </span>
+            </p>
+            <p
+              className="text-[11px] mt-0.5 opacity-50"
+              style={{
+                fontFamily: "var(--font-sans-light)",
+                color: "var(--color-darkest)",
+              }}
+            >
+              {user.location} · {user.role}
+            </p>
+          </div>
+
+          {/* Role badge */}
+          <span
+            className="text-[10px] px-2 py-0.5 rounded-full border"
             style={{
+              borderColor: "rgba(90,101,59,0.2)",
+              backgroundColor: "rgba(90,101,59,0.06)",
+              color: "var(--color-forest)",
               fontFamily: "var(--font-sans-light)",
-              color: "var(--color-darkest)",
             }}
           >
-            مرحباً،{" "}
-            <span style={{ fontFamily: "var(--font-sans-medium)" }}>
-              {userProfile.name}
-            </span>
-          </p>
+            {user.role === "admin"
+              ? "مشرف"
+              : user.role === "publisher"
+                ? "ناشر"
+                : "مستخدم"}
+          </span>
         </div>
 
-        {/* Reset (testing only) */}
+        {/* Logout */}
         <button
-          onClick={onReset}
-          className="text-[11px] underline opacity-40 self-start"
+          onClick={onLogout}
+          className="text-[11px] underline opacity-35 self-start"
           style={{
             fontFamily: "var(--font-sans-light)",
             color: "var(--color-darkest)",
           }}
         >
-          إعادة تعيين (للاختبار)
+          تسجيل الخروج
         </button>
       </motion.div>
     </div>
   );
 }
 
-// ─── Root Page ────────────────────────────────────────────────────────────────
+// ─── Root page ────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const [view, setView] = useState<View>("loading");
-  const [isIOSDevice, setIsIOSDevice] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isIOSDevice, setIsIOS] = useState(false);
+  const [isStandalone, setStandalone] = useState(false);
+  const [deferredPrompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(
+    null,
+  );
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [toastMessage, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     const ios = isIOS();
     const standalone = isInStandaloneMode() || isStandaloneDisplay();
-    setIsIOSDevice(ios);
-    setIsStandalone(standalone);
+    setIsIOS(ios);
+    setStandalone(standalone);
 
-    let profile: UserProfile | null = null;
-    try {
-      const raw = localStorage.getItem("user_profile");
-      if (raw) profile = JSON.parse(raw);
-    } catch (e) {
-      console.error("Failed to parse user_profile", e);
+    // Non-standalone browsers always see install view — no auth check needed
+    if (!standalone) {
+      setView("install");
+      return;
     }
-    if (profile) setUserProfile(profile);
 
-    setView(standalone ? (profile ? "home" : "login") : "install");
+    // Standalone: check session cookie via server
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const { user: u } = await res.json();
+          setUser(u);
+          setView("home");
+        } else {
+          setView("login");
+        }
+      } catch {
+        // Network error — show login rather than crashing
+        setView("login");
+      }
+    };
 
+    checkSession();
+
+    // Capture Android/Chrome beforeinstallprompt
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setPrompt(e as BeforeInstallPromptEvent);
     };
     window.addEventListener("beforeinstallprompt", handler);
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 4000);
+    setToast(msg);
+    setTimeout(() => setToast(null), 4000);
   };
 
-  const handleLoginSave = (profile: UserProfile) => {
-    setUserProfile(profile);
+  const handleLoginSave = (u: AuthUser) => {
+    setUser(u);
     setView("home");
-    triggerToast(`أهلاً بك يا ${profile.name}`);
+    triggerToast(`أهلاً بك يا ${u.name}`);
   };
 
-  const handleReset = () => {
-    localStorage.removeItem("user_profile");
-    setUserProfile(null);
-    setView("login");
-    triggerToast("تم تسجيل الخروج");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } finally {
+      setUser(null);
+      setView("login");
+      triggerToast("تم تسجيل الخروج");
+    }
   };
 
   if (view === "loading") return null;
@@ -203,7 +252,7 @@ export default function HomePage() {
                 <span>{toastMessage}</span>
               </div>
               <button
-                onClick={() => setToastMessage(null)}
+                onClick={() => setToast(null)}
                 className="opacity-50 hover:opacity-100 px-1"
               >
                 ✕
@@ -227,7 +276,9 @@ export default function HomePage() {
               isIOSDevice={isIOSDevice}
               isStandalone={isStandalone}
               deferredPrompt={deferredPrompt}
-              onInstallAccepted={() => setView("login")}
+              onInstallAccepted={() => {
+                /* PWA will relaunch standalone */
+              }}
               triggerToast={triggerToast}
             />
           </motion.div>
@@ -245,7 +296,7 @@ export default function HomePage() {
           </motion.div>
         )}
 
-        {view === "home" && userProfile && (
+        {view === "home" && user && (
           <motion.div
             key="home"
             initial={{ opacity: 0 }}
@@ -253,7 +304,7 @@ export default function HomePage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <HomeScreen userProfile={userProfile} onReset={handleReset} />
+            <HomeScreen user={user} onLogout={handleLogout} />
           </motion.div>
         )}
       </AnimatePresence>
