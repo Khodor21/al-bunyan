@@ -216,7 +216,7 @@ export default function BlogsPage() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setSavedIds(new Set(JSON.parse(raw)));
+      if (raw) setSavedIds(new Set(JSON.parse(raw) as string[]));
     } catch {}
   }, []);
 
@@ -240,7 +240,7 @@ export default function BlogsPage() {
         showToast("تم حفظ المقال ✓");
       }
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(next)));
       } catch {}
       return next;
     });
