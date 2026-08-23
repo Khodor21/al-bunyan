@@ -54,7 +54,7 @@ export default function TracksPage() {
 
         {/* SVG Title */}
         <motion.img
-          src="/titles/Tracks-Title.svg"
+          src="/titles/Recommandation-Title.svg"
           alt="المسارات المنهجية"
           draggable={false}
           initial={{ opacity: 0, scale: 0.92 }}
@@ -97,6 +97,8 @@ export default function TracksPage() {
             قريباً إن شاء الله
           </motion.h2>
         </div>
+        {/* Icon bubble */}
+
         <motion.p
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -107,7 +109,8 @@ export default function TracksPage() {
             opacity: 0.55,
           }}
         >
-          نعمل حالياً على تجهيز المسارات المنهجية لتكون متاحة لك في أقرب وقت.
+          نعمل حالياً على تجهيز صغحة ترشيحات البنيان لتكون متاحة لكم في أقرب
+          وقت.
         </motion.p>
 
         {/* Decorative dots */}

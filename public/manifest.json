@@ -4,8 +4,8 @@
   "description": "رؤية شرعية لقضايا الأمة المعاصرة",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#15170D",
-  "theme_color": "#15170D",
+  "background_color": "#fefffa",
+  "theme_color": "#fefffa",
   "lang": "ar",
   "dir": "rtl",
   "icons": [

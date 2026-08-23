@@ -12,8 +12,12 @@ const UnifiedEmoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
   { ssr: false },
 );
-const InstallView = dynamic(() => import("./components/InstallView"), { ssr: false });
-const LoginView = dynamic(() => import("./components/LoginView"), { ssr: false });
+const InstallView = dynamic(() => import("./components/InstallView"), {
+  ssr: false,
+});
+const LoginView = dynamic(() => import("./components/LoginView"), {
+  ssr: false,
+});
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -54,7 +58,10 @@ function HeroSlider() {
   }, []);
 
   return (
-    <div className="relative w-full flex items-center justify-center" style={{ height: 80 }}>
+    <div
+      className="relative w-full flex items-center justify-center"
+      style={{ height: 80 }}
+    >
       <AnimatePresence mode="wait">
         <motion.img
           key={HERO_SLIDES[index]}
@@ -68,8 +75,6 @@ function HeroSlider() {
           className="absolute w-full max-w-xs"
         />
       </AnimatePresence>
-
-  
     </div>
   );
 }
@@ -132,10 +137,22 @@ function HomeScreen() {
           {/* Main Action Grid */}
           <div className="flex flex-wrap flex-row-reverse items-center justify-center text-center gap-3">
             {[
-              { label: "المسارات المنهجية", action: () => router.push("/tracks") },
-              { label: "مقالات البنيان", action: () => router.push("/articles") },
-              { label: "اقتباسات الأئمة الأعلام", action: () => setShowQuotes(true) },
-              { label: "ترشيحات البنيان", action: () => router.push("/recommendations") },
+              {
+                label: "المسارات المنهجية",
+                action: () => router.push("/tracks"),
+              },
+              {
+                label: "مقالات البنيان",
+                action: () => router.push("/articles"),
+              },
+              {
+                label: "اقتباسات الأئمة الأعلام",
+                action: () => setShowQuotes(true),
+              },
+              {
+                label: "ترشيحات البنيان",
+                action: () => router.push("/recommendations"),
+              },
             ].map(({ label, action }) => (
               <motion.button
                 key={label}
@@ -168,7 +185,9 @@ export default function HomePage() {
   const [view, setView] = useState<View>("loading");
   const [isIOSDevice, setIsIOS] = useState(false);
   const [isStandalone, setStandalone] = useState(false);
-  const [deferredPrompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(
+    null,
+  );
   const [user, setUser] = useState<AuthUser | null>(null);
   const [toastMessage, setToast] = useState<string | null>(null);
 
@@ -245,7 +264,10 @@ export default function HomePage() {
                 <UnifiedEmoji unified="1f514" size={16} />
                 <span>{toastMessage}</span>
               </div>
-              <button onClick={() => setToast(null)} className="opacity-50 hover:opacity-100 px-1">
+              <button
+                onClick={() => setToast(null)}
+                className="opacity-50 hover:opacity-100 px-1"
+              >
                 ✕
               </button>
             </div>
@@ -255,7 +277,13 @@ export default function HomePage() {
 
       <AnimatePresence mode="wait">
         {view === "install" && (
-          <motion.div key="install" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div
+            key="install"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             <InstallView
               isIOSDevice={isIOSDevice}
               isStandalone={isStandalone}
@@ -267,13 +295,25 @@ export default function HomePage() {
         )}
 
         {view === "login" && (
-          <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div
+            key="login"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             <LoginView onSave={handleLoginSave} triggerToast={triggerToast} />
           </motion.div>
         )}
 
         {view === "home" && user && (
-          <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div
+            key="home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             <HomeScreen />
           </motion.div>
         )}
