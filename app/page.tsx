@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { FiUser, FiBookOpen } from "react-icons/fi";
+import { RiDoubleQuotesL } from "react-icons/ri"; // Using react-icons
 import type { AuthUser } from "@/types/auth";
-import QuotesView from "./components/QuotesView"; // Added import
+import QuotesView from "./components/QuotesView";
 
 const UnifiedEmoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
@@ -40,14 +43,20 @@ const isStandaloneDisplay = (): boolean =>
 type View = "loading" | "install" | "login" | "home";
 
 // ─── Home screen ─────────────────────────────────────────────────────────────
-function HomeScreen({
-  user,
-  onLogout,
-}: {
-  user: AuthUser;
-  onLogout: () => void;
-}) {
+function HomeScreen() {
   const [showQuotes, setShowQuotes] = useState(false);
+  const router = useRouter();
+
+  // Glassmorphism styling for the main cards
+  const glassCardStyle: React.CSSProperties = {
+    background:
+      "linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.25) 100%)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+    border: "1px solid rgba(255,255,255,0.6)",
+    boxShadow: "0 8px 32px rgba(18,30,23,0.05)",
+    color: "var(--color-darkest)",
+  };
 
   return (
     <>
@@ -59,7 +68,7 @@ function HomeScreen({
           color: "var(--color-darkest)",
         }}
       >
-        {/* Ambient glow */}
+        {/* Ambient background glow */}
         <div
           className="absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-48 rounded-full blur-3xl pointer-events-none opacity-20 z-0"
           style={{
@@ -68,115 +77,76 @@ function HomeScreen({
           }}
         />
 
+        {/* Top Navigation Bar */}
+        <div className="absolute top-6 left-6 z-20">
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={() => router.push("/profile")}
+            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors hover:bg-white/40 shadow-sm"
+            style={{
+              background: "rgba(255,255,255,0.5)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1px solid rgba(255,255,255,0.6)",
+            }}
+          >
+            <FiUser size={20} style={{ color: "var(--color-darkest)" }} />
+          </motion.button>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex-1 flex flex-col justify-end max-w-md w-full mx-auto z-10 pb-6"
+          className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto z-10 pb-12 gap-5"
         >
-          {/* Installed badge */}
-          <div
-            className="inline-flex items-center gap-1.5 text-xs mb-5 self-start"
-            style={{
-              color: "var(--color-forest)",
-              fontFamily: "var(--font-sans-light)",
-            }}
-          >
-            <UnifiedEmoji unified="2705" size={13} />
-            <span>التطبيق مثبت ويعمل بجودة كاملة</span>
-          </div>
+          {/* Logo / Header could go here in the future. For now, pushing content to middle-bottom */}
+          <div className="flex-1" />
 
-          {/* User card */}
-          <div
-            className="w-full p-4 rounded-2xl border mb-4 flex items-center justify-between shadow-sm"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.55)",
-              borderColor: "rgba(18,30,23,0.08)",
-            }}
-          >
-            <div>
-              <p
-                className="text-sm"
-                style={{
-                  fontFamily: "var(--font-sans-light)",
-                  color: "var(--color-darkest)",
-                }}
-              >
-                مرحباً،{" "}
-                <span style={{ fontFamily: "var(--font-sans-medium)" }}>
-                  {user.name}
-                </span>
-              </p>
-              <p
-                className="text-[11px] mt-0.5 opacity-50"
-                style={{
-                  fontFamily: "var(--font-sans-light)",
-                  color: "var(--color-darkest)",
-                }}
-              >
-                {user.location} · {user.role}
-              </p>
-            </div>
-
-            {/* Role badge */}
-            <span
-              className="text-[10px] px-2 py-0.5 rounded-full border"
+          {/* Main Action Grid */}
+          <div className="flex flex-row-reverse items-center justify-center text-center gap-4">
+            {/* Quotes Button */}
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setShowQuotes(true)}
+              className="w-fit px-4 py-3 rounded-full transition-all relative overflow-hidden group text-right"
               style={{
-                borderColor: "rgba(90,101,59,0.2)",
-                backgroundColor: "rgba(90,101,59,0.06)",
-                color: "var(--color-forest)",
-                fontFamily: "var(--font-sans-light)",
+                backgroundColor: "rgba(18,30,23,0.03)",
+                borderColor: "rgba(18,30,23,0.06)",
+                color: "var(--color-darkest)",
+                fontFamily: "var(--font-sans-medium)",
               }}
             >
-              {user.role === "admin"
-                ? "مشرف"
-                : user.role === "publisher"
-                  ? "ناشر"
-                  : "مستخدم"}
-            </span>
-          </div>
-
-          {/* Quotes Action Button */}
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowQuotes(true)}
-            className="w-full p-4 rounded-2xl border mb-6 flex items-center justify-between transition-colors hover:bg-white/40 shadow-sm group"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.3)",
-              borderColor: "rgba(18,30,23,0.08)",
-              color: "var(--color-darkest)",
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-sm"
-                style={{ color: "var(--color-forest)" }}
-              >
-                <UnifiedEmoji unified="1f4dc" size={16} />
+              <div className="flex flex-col">
+                <span
+                  className="text-sm text-center"
+                  style={{ fontFamily: "var(--font-sans-light)" }}
+                >
+                  اقتباسات الأئمة الأعلام
+                </span>
               </div>
-              <span style={{ fontFamily: "var(--font-sans-medium)" }}>
-                اقتباسات
-              </span>
-            </div>
-            <span className="text-[10px] opacity-40 group-hover:opacity-100 transition-opacity flex items-center gap-1 font-mono">
-              تصفح الآن
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </span>
-          </motion.button>
+            </motion.button>
 
-          {/* Logout */}
-          <button
-            onClick={onLogout}
-            className="text-[11px] underline opacity-35 self-start hover:opacity-100 transition-opacity"
-            style={{
-              fontFamily: "var(--font-sans-light)",
-              color: "var(--color-darkest)",
-            }}
-          >
-            تسجيل الخروج
-          </button>
+            {/* Methodological Tracks Button */}
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => router.push("/tracks")}
+              className="w-fit px-4 py-3 rounded-full transition-all relative overflow-hidden group"
+              style={{
+                backgroundColor: "rgba(18,30,23,0.03)",
+                borderColor: "rgba(18,30,23,0.06)",
+                color: "var(--color-darkest)",
+                fontFamily: "var(--font-sans-medium)",
+              }}
+            >
+              <span
+                className="text-sm text-center"
+                style={{ fontFamily: "var(--font-sans-light)" }}
+              >
+                المسارات المنهجية
+              </span>
+            </motion.button>
+          </div>
         </motion.div>
       </div>
 
@@ -205,13 +175,11 @@ export default function HomePage() {
     setIsIOS(ios);
     setStandalone(standalone);
 
-    // Non-standalone browsers always see install view — no auth check needed
     if (!standalone) {
       setView("install");
       return;
     }
 
-    // Standalone: check session cookie via server
     const checkSession = async () => {
       try {
         const res = await fetch("/api/auth/me", { credentials: "include" });
@@ -223,14 +191,12 @@ export default function HomePage() {
           setView("login");
         }
       } catch {
-        // Network error — show login rather than crashing
         setView("login");
       }
     };
 
     checkSession();
 
-    // Capture Android/Chrome beforeinstallprompt
     const handler = (e: Event) => {
       e.preventDefault();
       setPrompt(e as BeforeInstallPromptEvent);
@@ -250,24 +216,10 @@ export default function HomePage() {
     triggerToast(`أهلاً بك يا ${u.name}`);
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } finally {
-      setUser(null);
-      setView("login");
-      triggerToast("تم تسجيل الخروج");
-    }
-  };
-
   if (view === "loading") return null;
 
   return (
     <>
-      {/* ── Global Toast ─────────────────────────────────────────────────── */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
@@ -301,7 +253,6 @@ export default function HomePage() {
         )}
       </AnimatePresence>
 
-      {/* ── Views ────────────────────────────────────────────────────────── */}
       <AnimatePresence mode="wait">
         {view === "install" && (
           <motion.div
@@ -315,9 +266,7 @@ export default function HomePage() {
               isIOSDevice={isIOSDevice}
               isStandalone={isStandalone}
               deferredPrompt={deferredPrompt}
-              onInstallAccepted={() => {
-                /* PWA will relaunch standalone */
-              }}
+              onInstallAccepted={() => {}}
               triggerToast={triggerToast}
             />
           </motion.div>
@@ -343,7 +292,7 @@ export default function HomePage() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <HomeScreen user={user} onLogout={handleLogout} />
+            <HomeScreen />
           </motion.div>
         )}
       </AnimatePresence>

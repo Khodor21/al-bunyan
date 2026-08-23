@@ -89,7 +89,7 @@ export default function QuotesView({ onClose }: QuotesViewProps) {
               className="max-w-md w-full flex flex-col items-center gap-6"
             >
               <h2
-                className="text-2xl md:text-3xl text-center leading-loose font-medium"
+                className="text-2xl md:text-3xl text-center font-medium"
                 style={{ color: "var(--color-darkest)" }}
               >
                 {quote.text}
