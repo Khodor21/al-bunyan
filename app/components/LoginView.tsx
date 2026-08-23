@@ -20,12 +20,12 @@ interface LocationOption {
 export type { AuthUser };
 
 const locationsList: LocationOption[] = [
-  { id: "loc-1", name: "Saudia", image: "/cities/جزيرة العرب.svg" },
-  { id: "loc-2", name: "Al-Sham", image: "/cities/بلاد الشام.svg" },
-  { id: "loc-4", name: "Egypt", image: "/cities/مصر.svg" },
-  { id: "loc-3", name: "Morocco", image: "/cities/بلاد المغرب.svg" },
-  { id: "loc-5", name: "Al-Neel", image: "/cities/وادي النيل.svg" },
-  { id: "loc-6", name: "Iraq", image: "/cities/العراق.svg" },
+  { id: "loc-1", name: "Saudia", image: "/cities/جزيرة العرب.jpg" },
+  { id: "loc-2", name: "Al-Sham", image: "/cities/بلاد الشام.png" },
+  { id: "loc-4", name: "Egypt", image: "/cities/مصر.jpg" },
+  { id: "loc-3", name: "Morocco", image: "/cities/بلاد المغرب.jpg" },
+  { id: "loc-5", name: "Al-Neel", image: "/cities/وادي النيل.jpg" },
+  { id: "loc-6", name: "Iraq", image: "/cities/العراق.png" },
 ];
 
 const countryCodes = [

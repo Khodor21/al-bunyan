@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiUser, FiBookOpen } from "react-icons/fi";
-import { RiDoubleQuotesL } from "react-icons/ri"; // Using react-icons
+import { FiUser } from "react-icons/fi";
 import type { AuthUser } from "@/types/auth";
 import QuotesView from "./components/QuotesView";
 
@@ -13,13 +12,8 @@ const UnifiedEmoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
   { ssr: false },
 );
-
-const InstallView = dynamic(() => import("./components/InstallView"), {
-  ssr: false,
-});
-const LoginView = dynamic(() => import("./components/LoginView"), {
-  ssr: false,
-});
+const InstallView = dynamic(() => import("./components/InstallView"), { ssr: false });
+const LoginView = dynamic(() => import("./components/LoginView"), { ssr: false });
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -42,21 +36,48 @@ const isStandaloneDisplay = (): boolean =>
 
 type View = "loading" | "install" | "login" | "home";
 
+// ─── Hero Slider ─────────────────────────────────────────────────────────────
+const HERO_SLIDES = [
+  "/hero/Hero-1.svg",
+  "/hero/Hero-2.svg",
+  "/hero/Hero-3.svg",
+];
+
+function HeroSlider() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="relative w-full flex items-center justify-center" style={{ height: 80 }}>
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={HERO_SLIDES[index]}
+          src={HERO_SLIDES[index]}
+          alt=""
+          draggable={false}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -14 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute w-full max-w-xs"
+        />
+      </AnimatePresence>
+
+  
+    </div>
+  );
+}
+
 // ─── Home screen ─────────────────────────────────────────────────────────────
 function HomeScreen() {
   const [showQuotes, setShowQuotes] = useState(false);
   const router = useRouter();
-
-  // Glassmorphism styling for the main cards
-  const glassCardStyle: React.CSSProperties = {
-    background:
-      "linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.25) 100%)",
-    backdropFilter: "blur(20px)",
-    WebkitBackdropFilter: "blur(20px)",
-    border: "1px solid rgba(255,255,255,0.6)",
-    boxShadow: "0 8px 32px rgba(18,30,23,0.05)",
-    color: "var(--color-darkest)",
-  };
 
   return (
     <>
@@ -82,7 +103,7 @@ function HomeScreen() {
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => router.push("/profile")}
-            className="w-11 h-11 rounded-full flex items-center justify-center transition-colors hover:bg-white/40 shadow-sm"
+            className="w-11 h-11 rounded-full flex items-center justify-center"
             style={{
               background: "rgba(255,255,255,0.5)",
               backdropFilter: "blur(12px)",
@@ -98,59 +119,43 @@ function HomeScreen() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto z-10 pb-12 gap-5"
+          className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto z-10 pb-12 gap-10"
         >
-          {/* Logo / Header could go here in the future. For now, pushing content to middle-bottom */}
           <div className="flex-1" />
 
-          {/* Main Action Grid */}
-          <div className="flex flex-row-reverse items-center justify-center text-center gap-4">
-            {/* Quotes Button */}
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setShowQuotes(true)}
-              className="w-fit px-4 py-3 rounded-full transition-all relative overflow-hidden group text-right"
-              style={{
-                backgroundColor: "rgba(18,30,23,0.03)",
-                borderColor: "rgba(18,30,23,0.06)",
-                color: "var(--color-darkest)",
-                fontFamily: "var(--font-sans-medium)",
-              }}
-            >
-              <div className="flex flex-col">
-                <span
-                  className="text-sm text-center"
-                  style={{ fontFamily: "var(--font-sans-light)" }}
-                >
-                  اقتباسات الأئمة الأعلام
-                </span>
-              </div>
-            </motion.button>
+          {/* Hero Slider */}
+          <HeroSlider />
 
-            {/* Methodological Tracks Button */}
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => router.push("/tracks")}
-              className="w-fit px-4 py-3 rounded-full transition-all relative overflow-hidden group"
-              style={{
-                backgroundColor: "rgba(18,30,23,0.03)",
-                borderColor: "rgba(18,30,23,0.06)",
-                color: "var(--color-darkest)",
-                fontFamily: "var(--font-sans-medium)",
-              }}
-            >
-              <span
-                className="text-sm text-center"
-                style={{ fontFamily: "var(--font-sans-light)" }}
+          {/* Spacer for dots */}
+          <div className="h-2" />
+
+          {/* Main Action Grid */}
+          <div className="flex flex-wrap flex-row-reverse items-center justify-center text-center gap-3">
+            {[
+              { label: "المسارات المنهجية", action: () => router.push("/tracks") },
+              { label: "مقالات البنيان", action: () => router.push("/articles") },
+              { label: "اقتباسات الأئمة الأعلام", action: () => setShowQuotes(true) },
+              { label: "ترشيحات البنيان", action: () => router.push("/recommendations") },
+            ].map(({ label, action }) => (
+              <motion.button
+                key={label}
+                whileTap={{ scale: 0.97 }}
+                onClick={action}
+                className="arabic-stylish px-4 py-2.5 rounded-full text-sm"
+                style={{
+                  backgroundColor: "rgba(18,30,23,0.03)",
+                  border: "1px solid rgba(18,30,23,0.08)",
+                  color: "var(--color-darkest)",
+                  fontFamily: "var(--font-sans-light)",
+                }}
               >
-                المسارات المنهجية
-              </span>
-            </motion.button>
+                {label}
+              </motion.button>
+            ))}
           </div>
         </motion.div>
       </div>
 
-      {/* ── Fullscreen Quotes View Overlay ─────────────────────────────────── */}
       <AnimatePresence>
         {showQuotes && <QuotesView onClose={() => setShowQuotes(false)} />}
       </AnimatePresence>
@@ -163,9 +168,7 @@ export default function HomePage() {
   const [view, setView] = useState<View>("loading");
   const [isIOSDevice, setIsIOS] = useState(false);
   const [isStandalone, setStandalone] = useState(false);
-  const [deferredPrompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(
-    null,
-  );
+  const [deferredPrompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [toastMessage, setToast] = useState<string | null>(null);
 
@@ -242,10 +245,7 @@ export default function HomePage() {
                 <UnifiedEmoji unified="1f514" size={16} />
                 <span>{toastMessage}</span>
               </div>
-              <button
-                onClick={() => setToast(null)}
-                className="opacity-50 hover:opacity-100 px-1"
-              >
+              <button onClick={() => setToast(null)} className="opacity-50 hover:opacity-100 px-1">
                 ✕
               </button>
             </div>
@@ -255,13 +255,7 @@ export default function HomePage() {
 
       <AnimatePresence mode="wait">
         {view === "install" && (
-          <motion.div
-            key="install"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
+          <motion.div key="install" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <InstallView
               isIOSDevice={isIOSDevice}
               isStandalone={isStandalone}
@@ -273,25 +267,13 @@ export default function HomePage() {
         )}
 
         {view === "login" && (
-          <motion.div
-            key="login"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
+          <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <LoginView onSave={handleLoginSave} triggerToast={triggerToast} />
           </motion.div>
         )}
 
         {view === "home" && user && (
-          <motion.div
-            key="home"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
+          <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <HomeScreen />
           </motion.div>
         )}
