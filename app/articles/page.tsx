@@ -5,7 +5,12 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { RiBookmarkLine, RiBookmarkFill } from "react-icons/ri";
+import dynamic from "next/dynamic";
 
+const Emoji = dynamic(
+  () => import("emoji-picker-react").then((mod) => mod.Emoji),
+  { ssr: false }
+);
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Article {
@@ -23,9 +28,10 @@ interface Article {
 const ARTICLES: Article[] = [
   {
     id: "1",
-    title: "كافكا والفلسفة: البحث عن الحرية وسط عبثية العالم",
+    title:"مذبحة قلعة جانغي: عندما تُباد لقولك لا إله إلا الله",
     source: "مقالات البنيان",
     sourceInitial: "ب",
+    category: "بيان سبيل المجرمين",
     readTime: "٢ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
@@ -35,6 +41,8 @@ const ARTICLES: Article[] = [
     title: "وهم النضج، حين يختبئ الجهل في ثوب الحكمة",
     source: "مقالات البنيان",
     sourceInitial: "ب",
+        category: "تصحيح المعايير",
+
     readTime: "١ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
@@ -44,6 +52,8 @@ const ARTICLES: Article[] = [
     title: "تاريخ العبيد والعبودية عبر الحضارات",
     source: "تاريخ وسياسة",
     sourceInitial: "ت",
+        category: "بيان سبيل المجرمين",
+
     readTime: "١٥ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
@@ -53,6 +63,8 @@ const ARTICLES: Article[] = [
     title: "العلوم التي سرقها الغرب من المسلمين: التاريخ المنسي",
     source: "هدوء",
     sourceInitial: "هـ",
+        category: "بيان سبيل المجرمين",
+
     readTime: "٣ دقائق",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
@@ -64,33 +76,52 @@ const STORAGE_KEY = "ss_saved_articles";
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 
-function Toast({ message, visible }: { message: string; visible: boolean }) {
+function Toast({
+  message,
+  visible,
+  onClose,
+}: {
+  message: string;
+  visible: boolean;
+  onClose: () => void;
+}) {
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 8 }}
-          transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed z-50 whitespace-nowrap text-xs px-5 py-2.5 rounded-full shadow-lg"
-          style={{
-            bottom: "88px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            backgroundColor: "var(--color-darkest)",
-            color: "var(--color-cream)",
-            fontFamily: "var(--font-sans-medium)",
-          }}
+          initial={{ opacity: 0, y: -16, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -16, scale: 0.96 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="fixed top-5 left-4 right-4 z-[60] max-w-md mx-auto"
           dir="rtl"
         >
-          {message}
+          <div
+            className="px-4 py-3 rounded-2xl shadow-xl border flex items-center justify-between gap-3 text-xs backdrop-blur-md"
+            style={{
+              backgroundColor: "var(--color-darkest)",
+              color: "var(--color-cream)",
+              borderColor: "rgba(255,255,255,0.12)",
+              fontFamily: "var(--font-sans-light)",
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <Emoji unified="1f514" size={16} />
+              <span className="mt-0.5">{message}</span>
+            </div>
+            <button
+              onClick={onClose}
+              className="opacity-50 hover:opacity-100 px-1 transition-opacity"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
-
 // ── Article Card ──────────────────────────────────────────────────────────────
 
 function ArticleCard({
@@ -114,7 +145,7 @@ function ArticleCard({
         delay: 0.08 + index * 0.06,
       }}
       whileTap={{ scale: 0.97 }}
-      className="rounded-2xl overflow-hidden cursor-pointer flex flex-col relative z-10"
+      className="rounded-lg overflow-hidden cursor-pointer flex flex-col relative z-10"
       style={{
         backgroundColor: "var(--color-cream)",
         border: "1px solid rgba(18,30,23,0.08)",
@@ -130,26 +161,19 @@ function ArticleCard({
       />
 
       {/* Card body */}
-      <div className="flex flex-col gap-1.5 flex-1 p-2.5 pb-3">
-        {/* Source row */}
+      <div className="flex flex-col gap-1.5 flex-1 p-2.5 pb-2">
         <div className="flex items-center gap-1.5">
           {/* Avatar */}
           <div
-            className="w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center text-[8px] font-bold"
+            className="rounded-full flex-shrink-0 flex items-center justify-center text-[11px]"
             style={{
-              backgroundColor: "rgba(90, 101, 59, 0.12)",
               color: "var(--color-forest)",
-              border: "1px solid rgba(90, 101, 59, 0.18)",
+              
             }}
           >
-            {article.sourceInitial}
+            {article.category}
           </div>
-          <span
-            className="text-[10px] truncate opacity-60"
-            style={{ color: "var(--color-darkest)", fontFamily: "var(--font-sans-light)" }}
-          >
-            {article.source}
-          </span>
+       
         </div>
 
         {/* Title */}
@@ -157,7 +181,7 @@ function ArticleCard({
           className="text-sm mt-0.5"
           style={{
             color: "var(--color-darkest)",
-            fontFamily: "var(--font-sans-light)",
+            fontFamily: "var(--font-sans-medium)",
             display: "-webkit-box",
             WebkitLineClamp: 3,
             WebkitBoxOrient: "vertical",
@@ -238,7 +262,7 @@ export default function BlogsPage() {
         showToast("تمت إزالة المقال من المحفوظات");
       } else {
         next.add(id);
-        showToast("تم حفظ المقال ✓");
+        showToast("تم حفظ المقال");
       }
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(next)));
@@ -267,7 +291,7 @@ export default function BlogsPage() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        className="flex items-center justify-between p-6 z-10 w-full"
+        className="flex items-center justify-between py-6 px-4 z-10 w-full"
       >
         <motion.button
           whileTap={{ scale: 0.97 }}
@@ -280,7 +304,7 @@ export default function BlogsPage() {
             fontFamily: "var(--font-sans-light)",
           }}
         >
-          <MdOutlineKeyboardArrowRight />
+          <MdOutlineKeyboardArrowRight size={14} />
         </motion.button>
 
         {/* SVG Title */}
@@ -302,7 +326,7 @@ export default function BlogsPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.3 }}
-        className="flex gap-2 px-5 py-3 overflow-x-auto relative z-10"
+        className="flex gap-2 px-4 py-3 overflow-x-auto relative z-10"
         style={{ scrollbarWidth: "none" }}
       >
         {FILTERS.map((f, i) => (
@@ -310,14 +334,14 @@ export default function BlogsPage() {
             key={f}
             whileTap={{ scale: 0.95 }}
             onClick={() => setActiveFilter(i)}
-            className="px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap flex-shrink-0"
+            className="px-4 py-1.5 rounded-full text-xs whitespace-nowrap flex-shrink-0"
             style={{
-              fontFamily: "var(--font-sans-medium)",
+              fontFamily: activeFilter === i ? "var(--font-sans-medium)" :"var(--font-sans-light)" ,
               backgroundColor: activeFilter === i ? "var(--color-darkest)" : "rgba(18,30,23,0.03)",
               color: activeFilter === i ? "var(--color-cream)" : "var(--color-darkest)",
               border: activeFilter === i
                 ? "1.5px solid var(--color-darkest)"
-                : "1.5px solid rgba(18,30,23,0.08)",
+                : "0.5px solid rgba(18,30,23,0.08)",
               transition: "all 0.2s ease",
             }}
           >
@@ -327,12 +351,12 @@ export default function BlogsPage() {
       </motion.div>
 
       {/* ── Section header ── */}
-      <div className="flex items-center justify-between px-5 pb-3 pt-2 relative z-10">
+      <div className="flex items-center justify-between px-4 pb-3 pt-2 relative z-10">
         <span
-          className="text-[11px] font-semibold tracking-wider uppercase opacity-60"
+          className="text-sm tracking-wider uppercase opacity-60"
           style={{ color: "var(--color-darkest)", fontFamily: "var(--font-sans-medium)" }}
         >
-          موصى به
+         الكل
         </span>
         <span
           className="text-[11px] opacity-60"
@@ -347,7 +371,7 @@ export default function BlogsPage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 px-4 pb-28 flex-1 relative z-10"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 px-4 pb-14 md:pb-28 flex-1 relative z-10"
       >
         {ARTICLES.map((article, index) => (
           <ArticleCard
