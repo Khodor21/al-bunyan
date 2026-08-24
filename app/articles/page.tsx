@@ -11,6 +11,7 @@ const Emoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
   { ssr: false }
 );
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Article {
@@ -18,10 +19,11 @@ interface Article {
   title: string;
   source: string;
   sourceInitial: string;
-  category: String;
+  category: string;
   readTime: string;
   coverImage: string;
   url: string;
+  country: string; // Unified hex code for the flag emoji
 }
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
@@ -29,46 +31,47 @@ interface Article {
 const ARTICLES: Article[] = [
   {
     id: "1",
-    title:"مذبحة قلعة جانغي: عندما تُباد لقولك لا إله إلا الله",
+    title: "مذبحة قلعة جانغي: عندما تُباد لقولك لا إله إلا الله",
     source: "مقالات البنيان",
     sourceInitial: "ب",
     category: "بيان سبيل المجرمين",
     readTime: "٢ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
+    country: "1f1e6-1f1eb", // Afghanistan Flag
   },
   {
     id: "2",
     title: "وهم النضج، حين يختبئ الجهل في ثوب الحكمة",
     source: "مقالات البنيان",
     sourceInitial: "ب",
-        category: "تصحيح المعايير",
-
+    category: "تصحيح المعايير",
     readTime: "١ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
+    country: "1f1ea-1f1ec", // Egypt Flag
   },
   {
     id: "3",
     title: "تاريخ العبيد والعبودية عبر الحضارات",
     source: "تاريخ وسياسة",
     sourceInitial: "ت",
-        category: "بيان سبيل المجرمين",
-
+    category: "بيان سبيل المجرمين",
     readTime: "١٥ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
+    country: "1f1f5-1f1f8", // Palestine Flag
   },
   {
     id: "4",
     title: "العلوم التي سرقها الغرب من المسلمين: التاريخ المنسي",
     source: "هدوء",
     sourceInitial: "هـ",
-        category: "بيان سبيل المجرمين",
-
+    category: "بيان سبيل المجرمين",
     readTime: "٣ دقائق",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
+    country: "1f1f8-1f1fe", // Syria Flag
   },
 ];
 
@@ -152,29 +155,32 @@ function ArticleCard({
         border: "1px solid rgba(18,30,23,0.08)",
       }}
     >
-      {/* Cover image */}
-      <img
-        src={article.coverImage}
-        alt={article.title}
-        className="w-full object-cover flex-shrink-0"
-        style={{ aspectRatio: "4/3" }}
-        draggable={false}
-      />
+      {/* Cover image & Flag */}
+      <div className="relative w-full flex-shrink-0" style={{ aspectRatio: "4/3" }}>
+        <img
+          src={article.coverImage}
+          alt={article.title}
+          className="w-full h-full object-cover"
+          draggable={false}
+        />
+        {/* Country Flag Overlay */}
+        <div className="absolute top-2 right-2 bg-black/30 backdrop-blur-md border border-white/10 rounded-md px-1.5 py-1 flex items-center justify-center z-10">
+          <Emoji unified={article.country} size={14} />
+        </div>
+      </div>
 
       {/* Card body */}
       <div className="flex flex-col gap-1.5 flex-1 p-2.5 pb-2">
         <div className="flex items-center gap-1.5">
-          {/* Avatar */}
+          {/* Category */}
           <div
             className="rounded-full flex-shrink-0 flex items-center justify-center text-[11px]"
             style={{
               color: "var(--color-forest)",
-              
             }}
           >
             {article.category}
           </div>
-       
         </div>
 
         {/* Title */}
@@ -253,7 +259,9 @@ export default function BlogsPage() {
       () => setToast((t) => ({ ...t, visible: false })),
       2200
     );
-  };const closeToast = () => {
+  };
+
+  const closeToast = () => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast((t) => ({ ...t, visible: false }));
   };
@@ -274,6 +282,12 @@ export default function BlogsPage() {
       return next;
     });
   };
+
+  // Derive filtered articles based on the active filter state
+  const filteredArticles =
+    activeFilter === 0
+      ? ARTICLES
+      : ARTICLES.filter((article) => article.category === FILTERS[activeFilter]);
 
   return (
     <div
@@ -340,7 +354,7 @@ export default function BlogsPage() {
             onClick={() => setActiveFilter(i)}
             className="px-4 py-1.5 rounded-full text-xs whitespace-nowrap flex-shrink-0"
             style={{
-              fontFamily: activeFilter === i ? "var(--font-sans-medium)" :"var(--font-sans-light)" ,
+              fontFamily: activeFilter === i ? "var(--font-sans-medium)" : "var(--font-sans-light)",
               backgroundColor: activeFilter === i ? "var(--color-darkest)" : "rgba(18,30,23,0.03)",
               color: activeFilter === i ? "var(--color-cream)" : "var(--color-darkest)",
               border: activeFilter === i
@@ -360,13 +374,13 @@ export default function BlogsPage() {
           className="text-sm tracking-wider uppercase opacity-60"
           style={{ color: "var(--color-darkest)", fontFamily: "var(--font-sans-medium)" }}
         >
-         الكل
+          {FILTERS[activeFilter]}
         </span>
         <span
           className="text-[11px] opacity-60"
           style={{ color: "var(--color-darkest)", fontFamily: "var(--font-sans-light)" }}
         >
-          {ARTICLES.length} مقالات
+          {filteredArticles.length} مقالات
         </span>
       </div>
 
@@ -377,15 +391,17 @@ export default function BlogsPage() {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 px-4 pb-14 md:pb-28 flex-1 relative z-10"
       >
-        {ARTICLES.map((article, index) => (
-          <ArticleCard
-            key={article.id}
-            article={article}
-            index={index}
-            saved={savedIds.has(article.id)}
-            onToggleSave={handleToggleSave}
-          />
-        ))}
+        <AnimatePresence mode="popLayout">
+          {filteredArticles.map((article, index) => (
+            <ArticleCard
+              key={article.id}
+              article={article}
+              index={index}
+              saved={savedIds.has(article.id)}
+              onToggleSave={handleToggleSave}
+            />
+          ))}
+        </AnimatePresence>
       </motion.div>
 
       {/* ── Toast ── */}

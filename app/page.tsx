@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiUser } from "react-icons/fi";
+import { AiOutlineUser } from "react-icons/ai";
+import {RiBookmarkLine} from "react-icons/ri"
 import type { AuthUser } from "@/types/auth";
 import QuotesView from "./components/QuotesView";
 
@@ -104,20 +105,27 @@ function HomeScreen() {
         />
 
         {/* Top Navigation Bar */}
-        <div className="absolute top-6 left-6 z-20">
+        <div className="flex items-center gap-[6px] absolute top-8 left-6 z-20">
+        <div className="">
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => router.push("/profile")}
-            className="w-11 h-11 rounded-full flex items-center justify-center"
-            style={{
-              background: "rgba(255,255,255,0.5)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.6)",
-            }}
+            className="w-13 h-13 flex items-center justify-center"
+        
           >
-            <FiUser size={20} style={{ color: "var(--color-darkest)" }} />
+            <AiOutlineUser size={22} style={{ color: "var(--color-darkest)" }} />
           </motion.button>
+        </div>
+         <div className="">
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={() => router.push("/profile")}
+            className="w-13 h-13 flex items-center justify-center"
+        
+          >
+            <RiBookmarkLine size={20} style={{ color: "var(--color-darkest)" }} />
+          </motion.button>
+        </div>
         </div>
 
         <motion.div
@@ -136,29 +144,33 @@ function HomeScreen() {
 
           {/* Main Action Grid */}
           <div className="flex flex-wrap flex-row-reverse items-center justify-center text-center gap-3">
-            {[
-              {
-                label: "المسارات المنهجية",
-                action: () => router.push("/tracks"),
-              },
-              {
-                label: "مقالات البنيان",
-                action: () => router.push("/articles"),
-              },
-              {
-                label: "اقتباسات الأئمة الأعلام",
-                action: () => setShowQuotes(true),
-              },
-              {
-                label: "ترشيحات البنيان",
-                action: () => router.push("/recommendations"),
-              },
-            ].map(({ label, action }) => (
+          {[
+    {
+      label: "المسارات المنهجية",
+      emoji: "1f9e0", 
+      action: () => router.push("/tracks"),
+    },
+    {
+      label: "مقالات البنيان",
+      emoji: "1f4dd", 
+      action: () => router.push("/articles"),
+    },
+    {
+      label: "اقتباسات الأئمة الأعلام",
+      emoji: "1f4dc", 
+      action: () => setShowQuotes(true),
+    },
+    {
+      label: "ترشيحات البنيان",
+      emoji: "1f3a7", 
+      action: () => router.push("/recommendations"),
+    },
+  ].map(({ label, emoji, action }) => (
               <motion.button
                 key={label}
                 whileTap={{ scale: 0.97 }}
                 onClick={action}
-                className="arabic-stylish px-4 py-2.5 rounded-full text-sm"
+                className="arabic-stylish flex items-center gap-1 px-4 py-2.5 rounded-full text-sm"
                 style={{
                   backgroundColor: "rgba(18,30,23,0.03)",
                   border: "1px solid rgba(18,30,23,0.08)",
@@ -166,6 +178,7 @@ function HomeScreen() {
                   fontFamily: "var(--font-sans-light)",
                 }}
               >
+                <UnifiedEmoji unified={emoji} size={16} />
                 {label}
               </motion.button>
             ))}
