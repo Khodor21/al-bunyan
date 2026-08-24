@@ -253,6 +253,9 @@ export default function BlogsPage() {
       () => setToast((t) => ({ ...t, visible: false })),
       2200
     );
+  };const closeToast = () => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast((t) => ({ ...t, visible: false }));
   };
 
   const handleToggleSave = (id: string) => {
@@ -386,7 +389,7 @@ export default function BlogsPage() {
       </motion.div>
 
       {/* ── Toast ── */}
-      <Toast message={toast.message} visible={toast.visible} />
+      <Toast message={toast.message} visible={toast.visible} onClose={closeToast} />
     </div>
   );
 }
