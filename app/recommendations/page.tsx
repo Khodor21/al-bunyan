@@ -48,7 +48,7 @@ export default function TracksPage() {
             color: "var(--color-darkest)",
             fontFamily: "var(--font-sans-light)",
           }}
-        >
+        >ٍ
           <MdOutlineKeyboardArrowRight />
         </motion.button>
 

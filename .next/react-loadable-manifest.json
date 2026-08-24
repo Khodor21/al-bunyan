@@ -1,51 +1,32 @@
 {
   "app\\components\\InstallView.tsx -> emoji-picker-react": {
-    "id": 4834,
+    "id": "app\\components\\InstallView.tsx -> emoji-picker-react",
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
-      "static/chunks/605.982a5eaa8586435a.js"
+      "static/chunks/_app-pages-browser_node_modules_emoji-picker-react_dist_emoji-picker-react_esm_js.js"
     ]
   },
   "app\\components\\LoginView.tsx -> emoji-picker-react": {
-    "id": 4834,
+    "id": "app\\components\\LoginView.tsx -> emoji-picker-react",
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
-      "static/chunks/605.982a5eaa8586435a.js"
+      "static/chunks/_app-pages-browser_node_modules_emoji-picker-react_dist_emoji-picker-react_esm_js.js"
     ]
   },
   "app\\page.tsx -> ./components/InstallView": {
-    "id": 7327,
+    "id": "app\\page.tsx -> ./components/InstallView",
     "files": [
-      "static/chunks/648.29279b028b3e3961.js",
-      "static/chunks/327.533ef40c15bfe171.js"
+      "static/chunks/_app-pages-browser_app_components_InstallView_tsx.js"
     ]
   },
   "app\\page.tsx -> ./components/LoginView": {
-    "id": 8952,
+    "id": "app\\page.tsx -> ./components/LoginView",
     "files": [
-      "static/chunks/648.29279b028b3e3961.js",
-      "static/chunks/952.be3a6bfb960af95d.js"
+      "static/chunks/_app-pages-browser_app_components_LoginView_tsx.js"
     ]
   },
   "app\\page.tsx -> emoji-picker-react": {
-    "id": 4834,
+    "id": "app\\page.tsx -> emoji-picker-react",
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
-      "static/chunks/605.982a5eaa8586435a.js"
-    ]
-  },
-  "app\\recommendations\\page.tsx -> emoji-picker-react": {
-    "id": 4834,
-    "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
-      "static/chunks/605.982a5eaa8586435a.js"
-    ]
-  },
-  "app\\tracks\\page.tsx -> emoji-picker-react": {
-    "id": 4834,
-    "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
-      "static/chunks/605.982a5eaa8586435a.js"
+      "static/chunks/_app-pages-browser_node_modules_emoji-picker-react_dist_emoji-picker-react_esm_js.js"
     ]
   }
 }
