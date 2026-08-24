@@ -1,3 +1,14 @@
 {
-  "/articles/page": "app/articles/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth-status/route": "app/api/auth-status/route.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/profile/page": "app/profile/page.js",
+  "/articles/page": "app/articles/page.js",
+  "/page": "app/page.js",
+  "/api/auth/logout/route": "app/api/auth/logout/route.js",
+  "/recommendations/page": "app/recommendations/page.js",
+  "/tracks/page": "app/tracks/page.js",
+  "/api/auth/signup/route": "app/api/auth/signup/route.js",
+  "/api/notifications/register-token/route": "app/api/notifications/register-token/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js"
 }

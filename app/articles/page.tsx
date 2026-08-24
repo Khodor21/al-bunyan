@@ -18,6 +18,7 @@ interface Article {
   title: string;
   source: string;
   sourceInitial: string;
+  category: String;
   readTime: string;
   coverImage: string;
   url: string;
