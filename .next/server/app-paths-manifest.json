@@ -1,7 +1,6 @@
 {
-  "/articles/page": "app/articles/page.js",
   "/page": "app/page.js",
-  "/profile/page": "app/profile/page.js",
-  "/saved/page": "app/saved/page.js",
-  "/api/auth-status/route": "app/api/auth-status/route.js"
+  "/articles/page": "app/articles/page.js",
+  "/api/auth-status/route": "app/api/auth-status/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js"
 }
