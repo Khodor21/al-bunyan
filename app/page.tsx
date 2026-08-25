@@ -121,7 +121,7 @@ function HomeScreen() {
           <div className="">
             <motion.button
               whileTap={{ scale: 0.92 }}
-              onClick={() => router.push("/profile")}
+              onClick={() => router.push("/saved")}
               className="w-13 h-13 flex items-center justify-center"
             >
               <RiBookmarkLine
@@ -147,7 +147,7 @@ function HomeScreen() {
           <div className="h-2" />
 
           {/* Main Action Grid */}
-          <div className="grid grid-cols-2 gap-3 text-center mx-auto">
+          <div className="grid grid-cols-2 gap-2 text-center mx-auto">
             {[
               {
                 label: "المسارات المنهجية",
@@ -174,7 +174,7 @@ function HomeScreen() {
                 key={label}
                 whileTap={{ scale: 0.97 }}
                 onClick={action}
-                className="arabic-stylish mx-auto text-center w-fit flex items-center justify-center gap-1 px-4 py-2.5 rounded-full text-sm"
+                className="arabic-stylish mx-auto text-center w-fit flex items-center justify-center gap-1 px-3 py-2 rounded-full text-sm"
                 style={{
                   backgroundColor: "rgba(18,30,23,0.03)",
                   border: "1px solid rgba(18,30,23,0.08)",

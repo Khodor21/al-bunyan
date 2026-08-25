@@ -1,11 +1,22 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { FiArrowRight, FiUser, FiSettings, FiLogOut } from "react-icons/fi";
+import { FiUser, FiSettings, FiLogOut } from "react-icons/fi";
+import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import type { AuthUser } from "@/types/auth";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me", { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => setUser(data.user))
+      .catch(console.error);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -14,7 +25,6 @@ export default function ProfilePage() {
         credentials: "include",
       });
     } finally {
-      // Hard refresh to reset PWA state and trigger login view naturally
       window.location.href = "/";
     }
   };
@@ -29,22 +39,38 @@ export default function ProfilePage() {
       }}
     >
       {/* Navigation Bar */}
-      <div className="flex items-center justify-between p-6">
-        <button
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        className="flex items-center justify-between py-6 px-4 z-10 w-full"
+      >
+        <motion.button
+          whileTap={{ scale: 0.97 }}
           onClick={() => router.back()}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 transition-colors"
+          className="p-2 rounded-full text-base"
+          style={{
+            backgroundColor: "rgba(18,30,23,0.03)",
+            border: "1px solid rgba(18,30,23,0.08)",
+            color: "var(--color-darkest)",
+            fontFamily: "var(--font-sans-light)",
+          }}
         >
-          {/* RTL Arrow points right to go "back" */}
-          <FiArrowRight size={20} />
-        </button>
-        <h1
-          className="text-lg font-bold"
-          style={{ fontFamily: "var(--font-sans-medium)" }}
-        >
-          الملف الشخصي
-        </h1>
-        <div className="w-10" /> {/* Spacer for centering */}
-      </div>
+          <MdOutlineKeyboardArrowRight size={14} />
+        </motion.button>
+
+        <motion.img
+          src="/titles/Profile-Title.svg"
+          alt="الملف الشخصي"
+          draggable={false}
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
+          className="h-7"
+        />
+
+        <div className="w-10" />
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -52,8 +78,8 @@ export default function ProfilePage() {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="flex-1 px-6 flex flex-col max-w-md w-full mx-auto gap-8 pt-4"
       >
-        {/* Avatar Placeholder */}
-        <div className="flex flex-col items-center justify-center gap-4">
+        {/* Avatar + User Info */}
+        <div className="flex flex-col items-center justify-center gap-3">
           <div
             className="w-24 h-24 rounded-full flex items-center justify-center shadow-sm"
             style={{
@@ -63,35 +89,40 @@ export default function ProfilePage() {
           >
             <FiUser size={40} />
           </div>
+
+          {user ? (
+            <>
+              <p
+                className="text-lg"
+                style={{ fontFamily: "var(--font-sans-medium)" }}
+              >
+                {user.name}
+              </p>
+              <p
+                className="text-sm opacity-50"
+                style={{ fontFamily: "var(--font-sans-light)" }}
+              >
+                {user.countryCode} {user.phone}
+              </p>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 mt-1">
+              <div className="h-5 w-32 rounded-full bg-black/5 animate-pulse" />
+              <div className="h-4 w-24 rounded-full bg-black/5 animate-pulse" />
+            </div>
+          )}
         </div>
 
         {/* Action List */}
         <div className="flex flex-col gap-3">
           <button
-            className="w-full p-4 rounded-2xl flex items-center gap-4 transition-colors bg-white/50 border shadow-sm"
-            style={{ borderColor: "rgba(18,30,23,0.05)" }}
-          >
-            <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center">
-              <FiSettings size={18} />
-            </div>
-            <span
-              className="text-base"
-              style={{ fontFamily: "var(--font-sans-medium)" }}
-            >
-              إعدادات الحساب
-            </span>
-          </button>
-
-          <button
             onClick={handleLogout}
-            className="w-full p-4 rounded-2xl flex items-center gap-4 transition-colors bg-red-500/10 border shadow-sm mt-4"
+            className="w-full px-3 py-3 rounded flex items-center gap-2 transition-colors bg-red-500/10 border shadow-sm mt-4"
             style={{ borderColor: "rgba(239,68,68,0.1)", color: "#ef4444" }}
           >
-            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
-              <FiLogOut size={18} />
-            </div>
+            <FiLogOut size={16} />
             <span
-              className="text-base"
+              className="text-sm"
               style={{ fontFamily: "var(--font-sans-medium)" }}
             >
               تسجيل الخروج

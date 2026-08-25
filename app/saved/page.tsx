@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
-import { RiBookmarkLine, RiBookmarkFill } from "react-icons/ri";
+import { RiBookmarkFill, RiBookmarkLine } from "react-icons/ri";
 import dynamic from "next/dynamic";
 
 const Emoji = dynamic(
@@ -13,7 +13,6 @@ const Emoji = dynamic(
 );
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
 interface Article {
   id: string;
   title: string;
@@ -23,11 +22,13 @@ interface Article {
   readTime: string;
   coverImage: string;
   url: string;
-  country: string; // Unified hex code for the flag emoji
+  country: string;
 }
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+// ── Must match exactly what BlogsPage uses ────────────────────────────────────
+const STORAGE_KEY = "ss_saved_articles";
 
+// ── Same ARTICLES list (single source of truth — move to a shared lib later) ─
 const ARTICLES: Article[] = [
   {
     id: "1",
@@ -38,7 +39,7 @@ const ARTICLES: Article[] = [
     readTime: "٢ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
-    country: "1f1e6-1f1eb", // Afghanistan Flag
+    country: "1f1e6-1f1eb",
   },
   {
     id: "2",
@@ -49,7 +50,7 @@ const ARTICLES: Article[] = [
     readTime: "١ دقيقة",
     coverImage: "/blogs/Blog-2.jpg",
     url: "#",
-    country: "1f1e7-1f1e6", // Egypt Flag
+    country: "1f1e7-1f1e6",
   },
   {
     id: "3",
@@ -60,7 +61,7 @@ const ARTICLES: Article[] = [
     readTime: "١٥ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
-    country: "1f1f5-1f1f8", // Palestine Flag
+    country: "1f1f5-1f1f8",
   },
   {
     id: "4",
@@ -71,21 +72,11 @@ const ARTICLES: Article[] = [
     readTime: "٣ دقائق",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
-    country: "1f1f8-1f1fe", // Syria Flag
+    country: "1f1f8-1f1fe",
   },
 ];
 
-const FILTERS = [
-  "الكل",
-  "بيان سبيل المجرمين",
-  "مقاومة التفاهة",
-  "تصحيح المعايير",
-  "أدب",
-];
-const STORAGE_KEY = "ss_saved_articles";
-
 // ── Toast ─────────────────────────────────────────────────────────────────────
-
 function Toast({
   message,
   visible,
@@ -132,27 +123,27 @@ function Toast({
     </AnimatePresence>
   );
 }
-// ── Article Card ──────────────────────────────────────────────────────────────
 
+// ── Article Card ──────────────────────────────────────────────────────────────
 function ArticleCard({
   article,
   index,
-  saved,
-  onToggleSave,
+  onUnsave,
 }: {
   article: Article;
   index: number;
-  saved: boolean;
-  onToggleSave: (id: string) => void;
+  onUnsave: (id: string) => void;
 }) {
   return (
     <motion.div
+      layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.94 }}
       transition={{
-        duration: 0.4,
+        duration: 0.35,
         ease: [0.16, 1, 0.3, 1],
-        delay: 0.08 + index * 0.06,
+        delay: index * 0.05,
       }}
       whileTap={{ scale: 0.97 }}
       className="rounded-lg overflow-hidden cursor-pointer flex flex-col relative z-10"
@@ -161,7 +152,7 @@ function ArticleCard({
         border: "1px solid rgba(18,30,23,0.08)",
       }}
     >
-      {/* Cover image & Flag */}
+      {/* Cover + Flag */}
       <div
         className="relative w-full flex-shrink-0"
         style={{ aspectRatio: "4/3" }}
@@ -172,27 +163,17 @@ function ArticleCard({
           className="w-full h-full object-cover"
           draggable={false}
         />
-        {/* Country Flag Overlay */}
         <div className="absolute top-2 right-2 bg-black/30 backdrop-blur-md border border-white/10 rounded-md px-1.5 py-1 flex items-center justify-center z-10">
           <Emoji unified={article.country} size={14} />
         </div>
       </div>
 
-      {/* Card body */}
+      {/* Body */}
       <div className="flex flex-col gap-1.5 flex-1 p-2.5 pb-2">
-        <div className="flex items-center gap-1.5">
-          {/* Category */}
-          <div
-            className="rounded-full flex-shrink-0 flex items-center justify-center text-[11px]"
-            style={{
-              color: "var(--color-forest)",
-            }}
-          >
-            {article.category}
-          </div>
+        <div className="text-[11px]" style={{ color: "var(--color-forest)" }}>
+          {article.category}
         </div>
 
-        {/* Title */}
         <p
           className="text-sm mt-0.5"
           style={{
@@ -207,7 +188,7 @@ function ArticleCard({
           {article.title}
         </p>
 
-        {/* Meta row */}
+        {/* Meta */}
         <div className="flex items-center justify-between mt-auto pt-1">
           <span
             className="text-[10px] opacity-60"
@@ -223,30 +204,22 @@ function ArticleCard({
             whileTap={{ scale: 0.85 }}
             onClick={(e) => {
               e.stopPropagation();
-              onToggleSave(article.id);
+              onUnsave(article.id);
             }}
             className="flex items-center justify-center rounded-full p-0.5"
             style={{ background: "transparent", border: "none" }}
           >
             <AnimatePresence mode="wait">
               <motion.span
-                key={saved ? "saved" : "unsaved"}
+                key="saved"
                 initial={{ scale: 0.7, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.7, opacity: 0 }}
                 transition={{ duration: 0.15 }}
                 className="flex"
-                style={{
-                  color: saved
-                    ? "var(--color-forest)"
-                    : "rgba(21, 23, 13, 0.3)",
-                }}
+                style={{ color: "var(--color-forest)" }}
               >
-                {saved ? (
-                  <RiBookmarkFill size={15} />
-                ) : (
-                  <RiBookmarkLine size={15} />
-                )}
+                <RiBookmarkFill size={15} />
               </motion.span>
             </AnimatePresence>
           </motion.button>
@@ -256,15 +229,67 @@ function ArticleCard({
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+// ── Empty State ───────────────────────────────────────────────────────────────
+function EmptyState() {
+  const router = useRouter();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="flex-1 flex flex-col items-center justify-center gap-4 px-8 text-center pb-20"
+    >
+      <div
+        className="w-16 h-16 rounded-full flex items-center justify-center"
+        style={{ backgroundColor: "rgba(18,30,23,0.05)" }}
+      >
+        <RiBookmarkLine
+          size={28}
+          style={{ color: "var(--color-forest)", opacity: 0.5 }}
+        />
+      </div>
+      <p
+        className="text-base"
+        style={{
+          color: "var(--color-darkest)",
+          fontFamily: "var(--font-sans-medium)",
+        }}
+      >
+        لا توجد مقالات محفوظة
+      </p>
+      <p
+        className="text-sm opacity-50"
+        style={{
+          color: "var(--color-darkest)",
+          fontFamily: "var(--font-sans-light)",
+        }}
+      >
+        احفظ المقالات التي تريد قراءتها لاحقاً وستظهر هنا
+      </p>
+      <motion.button
+        whileTap={{ scale: 0.96 }}
+        onClick={() => router.back()}
+        className="mt-2 px-6 py-2.5 rounded-full text-sm"
+        style={{
+          backgroundColor: "var(--color-darkest)",
+          color: "var(--color-cream)",
+          fontFamily: "var(--font-sans-medium)",
+        }}
+      >
+        تصفح المقالات
+      </motion.button>
+    </motion.div>
+  );
+}
 
-export default function BlogsPage() {
+// ── Main Page ─────────────────────────────────────────────────────────────────
+export default function SavedPage() {
   const router = useRouter();
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [activeFilter, setActiveFilter] = useState(0);
   const [toast, setToast] = useState({ message: "", visible: false });
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Hydrate from localStorage
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -286,30 +311,19 @@ export default function BlogsPage() {
     setToast((t) => ({ ...t, visible: false }));
   };
 
-  const handleToggleSave = (id: string) => {
+  const handleUnsave = (id: string) => {
     setSavedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-        showToast("تمت إزالة المقال من المحفوظات");
-      } else {
-        next.add(id);
-        showToast("تم حفظ المقال");
-      }
+      next.delete(id);
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(next)));
       } catch {}
       return next;
     });
+    showToast("تمت إزالة المقال من المحفوظات");
   };
 
-  // Derive filtered articles based on the active filter state
-  const filteredArticles =
-    activeFilter === 0
-      ? ARTICLES
-      : ARTICLES.filter(
-          (article) => article.category === FILTERS[activeFilter],
-        );
+  const savedArticles = ARTICLES.filter((a) => savedIds.has(a.id));
 
   return (
     <div
@@ -320,7 +334,7 @@ export default function BlogsPage() {
         color: "var(--color-darkest)",
       }}
     >
-      {/* Ambient glow matching TracksPage */}
+      {/* Ambient glow */}
       <div
         className="absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-48 rounded-full blur-3xl pointer-events-none opacity-15 z-0"
         style={{
@@ -339,7 +353,7 @@ export default function BlogsPage() {
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => router.back()}
-          className="arabic-stylish p-2 rounded-full text-base"
+          className="p-2 rounded-full text-base"
           style={{
             backgroundColor: "rgba(18,30,23,0.03)",
             border: "1px solid rgba(18,30,23,0.08)",
@@ -350,10 +364,9 @@ export default function BlogsPage() {
           <MdOutlineKeyboardArrowRight size={14} />
         </motion.button>
 
-        {/* SVG Title */}
         <motion.img
-          src="/titles/Blogs-Title.svg"
-          alt="المسارات المنهجية"
+          src="/titles/Saved-Title.svg"
+          alt="المحفوظات"
           draggable={false}
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -364,86 +377,52 @@ export default function BlogsPage() {
         <div className="w-10" />
       </motion.div>
 
-      {/* ── Filter Pills ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.3 }}
-        className="flex gap-2 px-4 py-3 overflow-x-auto relative z-10"
-        style={{ scrollbarWidth: "none" }}
-      >
-        {FILTERS.map((f, i) => (
-          <motion.button
-            key={f}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setActiveFilter(i)}
-            className="px-4 py-1.5 rounded-full text-xs whitespace-nowrap flex-shrink-0"
+      {/* ── Section header ── */}
+      {savedArticles.length > 0 && (
+        <div className="flex items-center justify-between px-4 pb-3 pt-1 relative z-10">
+          <span
+            className="text-sm opacity-60"
             style={{
-              fontFamily:
-                activeFilter === i
-                  ? "var(--font-sans-medium)"
-                  : "var(--font-sans-light)",
-              backgroundColor:
-                activeFilter === i
-                  ? "var(--color-darkest)"
-                  : "rgba(18,30,23,0.03)",
-              color:
-                activeFilter === i
-                  ? "var(--color-cream)"
-                  : "var(--color-darkest)",
-              border:
-                activeFilter === i
-                  ? "1.5px solid var(--color-darkest)"
-                  : "0.5px solid rgba(18,30,23,0.08)",
-              transition: "all 0.2s ease",
+              color: "var(--color-darkest)",
+              fontFamily: "var(--font-sans-medium)",
             }}
           >
-            {f}
-          </motion.button>
-        ))}
-      </motion.div>
+            المحفوظات
+          </span>
+          <span
+            className="text-[11px] opacity-60"
+            style={{
+              color: "var(--color-darkest)",
+              fontFamily: "var(--font-sans-light)",
+            }}
+          >
+            {savedArticles.length} مقالات
+          </span>
+        </div>
+      )}
 
-      {/* ── Section header ── */}
-      <div className="flex items-center justify-between px-4 pb-3 pt-2 relative z-10">
-        <span
-          className="text-sm tracking-wider uppercase opacity-60"
-          style={{
-            color: "var(--color-darkest)",
-            fontFamily: "var(--font-sans-medium)",
-          }}
+      {/* ── Grid or Empty ── */}
+      {savedArticles.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 px-4 pb-14 md:pb-28 flex-1 relative z-10"
         >
-          {FILTERS[activeFilter]}
-        </span>
-        <span
-          className="text-[11px] opacity-60"
-          style={{
-            color: "var(--color-darkest)",
-            fontFamily: "var(--font-sans-light)",
-          }}
-        >
-          {filteredArticles.length} مقالات
-        </span>
-      </div>
-
-      {/* ── Grid ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 px-4 pb-14 md:pb-28 flex-1 relative z-10"
-      >
-        <AnimatePresence mode="popLayout">
-          {filteredArticles.map((article, index) => (
-            <ArticleCard
-              key={article.id}
-              article={article}
-              index={index}
-              saved={savedIds.has(article.id)}
-              onToggleSave={handleToggleSave}
-            />
-          ))}
-        </AnimatePresence>
-      </motion.div>
+          <AnimatePresence mode="popLayout">
+            {savedArticles.map((article, index) => (
+              <ArticleCard
+                key={article.id}
+                article={article}
+                index={index}
+                onUnsave={handleUnsave}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      )}
 
       {/* ── Toast ── */}
       <Toast
