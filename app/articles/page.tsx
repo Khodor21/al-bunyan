@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 
 const Emoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
-  { ssr: false }
+  { ssr: false },
 );
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -42,14 +42,14 @@ const ARTICLES: Article[] = [
   },
   {
     id: "2",
-    title: "وهم النضج، حين يختبئ الجهل في ثوب الحكمة",
+    title: "جنرال الدمار: كيف قاد ملاديتش حرب الإبادة ضد مسلمي البوسنة؟",
     source: "مقالات البنيان",
     sourceInitial: "ب",
-    category: "تصحيح المعايير",
+    category: "بيان سبيل المجرمين",
     readTime: "١ دقيقة",
-    coverImage: "/blogs/Blog-1.jpg",
+    coverImage: "/blogs/Blog-2.jpg",
     url: "#",
-    country: "1f1ea-1f1ec", // Egypt Flag
+    country: "1f1e7-1f1e6", // Egypt Flag
   },
   {
     id: "3",
@@ -75,7 +75,13 @@ const ARTICLES: Article[] = [
   },
 ];
 
-const FILTERS = ["الكل", "بيان سبيل المجرمين", "مقاومة التفاهة", "تصحيح المعايير", "أدب"];
+const FILTERS = [
+  "الكل",
+  "بيان سبيل المجرمين",
+  "مقاومة التفاهة",
+  "تصحيح المعايير",
+  "أدب",
+];
 const STORAGE_KEY = "ss_saved_articles";
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
@@ -156,7 +162,10 @@ function ArticleCard({
       }}
     >
       {/* Cover image & Flag */}
-      <div className="relative w-full flex-shrink-0" style={{ aspectRatio: "4/3" }}>
+      <div
+        className="relative w-full flex-shrink-0"
+        style={{ aspectRatio: "4/3" }}
+      >
         <img
           src={article.coverImage}
           alt={article.title}
@@ -202,7 +211,10 @@ function ArticleCard({
         <div className="flex items-center justify-between mt-auto pt-1">
           <span
             className="text-[10px] opacity-60"
-            style={{ color: "var(--color-darkest)", fontFamily: "var(--font-sans-light)" }}
+            style={{
+              color: "var(--color-darkest)",
+              fontFamily: "var(--font-sans-light)",
+            }}
           >
             {article.readTime} قراءة
           </span>
@@ -224,9 +236,17 @@ function ArticleCard({
                 exit={{ scale: 0.7, opacity: 0 }}
                 transition={{ duration: 0.15 }}
                 className="flex"
-                style={{ color: saved ? "var(--color-forest)" : "rgba(21, 23, 13, 0.3)" }}
+                style={{
+                  color: saved
+                    ? "var(--color-forest)"
+                    : "rgba(21, 23, 13, 0.3)",
+                }}
               >
-                {saved ? <RiBookmarkFill size={15} /> : <RiBookmarkLine size={15} />}
+                {saved ? (
+                  <RiBookmarkFill size={15} />
+                ) : (
+                  <RiBookmarkLine size={15} />
+                )}
               </motion.span>
             </AnimatePresence>
           </motion.button>
@@ -257,7 +277,7 @@ export default function BlogsPage() {
     setToast({ message, visible: true });
     toastTimer.current = setTimeout(
       () => setToast((t) => ({ ...t, visible: false })),
-      2200
+      2200,
     );
   };
 
@@ -287,13 +307,18 @@ export default function BlogsPage() {
   const filteredArticles =
     activeFilter === 0
       ? ARTICLES
-      : ARTICLES.filter((article) => article.category === FILTERS[activeFilter]);
+      : ARTICLES.filter(
+          (article) => article.category === FILTERS[activeFilter],
+        );
 
   return (
     <div
       className="min-h-dvh w-screen overflow-x-hidden flex flex-col relative"
       dir="rtl"
-      style={{ backgroundColor: "var(--color-cream)", color: "var(--color-darkest)" }}
+      style={{
+        backgroundColor: "var(--color-cream)",
+        color: "var(--color-darkest)",
+      }}
     >
       {/* Ambient glow matching TracksPage */}
       <div
@@ -354,12 +379,22 @@ export default function BlogsPage() {
             onClick={() => setActiveFilter(i)}
             className="px-4 py-1.5 rounded-full text-xs whitespace-nowrap flex-shrink-0"
             style={{
-              fontFamily: activeFilter === i ? "var(--font-sans-medium)" : "var(--font-sans-light)",
-              backgroundColor: activeFilter === i ? "var(--color-darkest)" : "rgba(18,30,23,0.03)",
-              color: activeFilter === i ? "var(--color-cream)" : "var(--color-darkest)",
-              border: activeFilter === i
-                ? "1.5px solid var(--color-darkest)"
-                : "0.5px solid rgba(18,30,23,0.08)",
+              fontFamily:
+                activeFilter === i
+                  ? "var(--font-sans-medium)"
+                  : "var(--font-sans-light)",
+              backgroundColor:
+                activeFilter === i
+                  ? "var(--color-darkest)"
+                  : "rgba(18,30,23,0.03)",
+              color:
+                activeFilter === i
+                  ? "var(--color-cream)"
+                  : "var(--color-darkest)",
+              border:
+                activeFilter === i
+                  ? "1.5px solid var(--color-darkest)"
+                  : "0.5px solid rgba(18,30,23,0.08)",
               transition: "all 0.2s ease",
             }}
           >
@@ -372,13 +407,19 @@ export default function BlogsPage() {
       <div className="flex items-center justify-between px-4 pb-3 pt-2 relative z-10">
         <span
           className="text-sm tracking-wider uppercase opacity-60"
-          style={{ color: "var(--color-darkest)", fontFamily: "var(--font-sans-medium)" }}
+          style={{
+            color: "var(--color-darkest)",
+            fontFamily: "var(--font-sans-medium)",
+          }}
         >
           {FILTERS[activeFilter]}
         </span>
         <span
           className="text-[11px] opacity-60"
-          style={{ color: "var(--color-darkest)", fontFamily: "var(--font-sans-light)" }}
+          style={{
+            color: "var(--color-darkest)",
+            fontFamily: "var(--font-sans-light)",
+          }}
         >
           {filteredArticles.length} مقالات
         </span>
@@ -405,7 +446,11 @@ export default function BlogsPage() {
       </motion.div>
 
       {/* ── Toast ── */}
-      <Toast message={toast.message} visible={toast.visible} onClose={closeToast} />
+      <Toast
+        message={toast.message}
+        visible={toast.visible}
+        onClose={closeToast}
+      />
     </div>
   );
 }

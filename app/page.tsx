@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { AiOutlineUser } from "react-icons/ai";
-import {RiBookmarkLine} from "react-icons/ri"
+import { RiBookmarkLine } from "react-icons/ri";
 import type { AuthUser } from "@/types/auth";
 import QuotesView from "./components/QuotesView";
 
@@ -106,26 +106,30 @@ function HomeScreen() {
 
         {/* Top Navigation Bar */}
         <div className="flex items-center gap-[6px] absolute top-8 left-6 z-20">
-        <div className="">
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={() => router.push("/profile")}
-            className="w-13 h-13 flex items-center justify-center"
-        
-          >
-            <AiOutlineUser size={22} style={{ color: "var(--color-darkest)" }} />
-          </motion.button>
-        </div>
-         <div className="">
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={() => router.push("/profile")}
-            className="w-13 h-13 flex items-center justify-center"
-        
-          >
-            <RiBookmarkLine size={20} style={{ color: "var(--color-darkest)" }} />
-          </motion.button>
-        </div>
+          <div className="">
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={() => router.push("/profile")}
+              className="w-13 h-13 flex items-center justify-center"
+            >
+              <AiOutlineUser
+                size={22}
+                style={{ color: "var(--color-darkest)" }}
+              />
+            </motion.button>
+          </div>
+          <div className="">
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={() => router.push("/profile")}
+              className="w-13 h-13 flex items-center justify-center"
+            >
+              <RiBookmarkLine
+                size={20}
+                style={{ color: "var(--color-darkest)" }}
+              />
+            </motion.button>
+          </div>
         </div>
 
         <motion.div
@@ -143,34 +147,34 @@ function HomeScreen() {
           <div className="h-2" />
 
           {/* Main Action Grid */}
-          <div className="flex flex-wrap flex-row-reverse items-center justify-center text-center gap-3">
-          {[
-    {
-      label: "المسارات المنهجية",
-      emoji: "1f9e0", 
-      action: () => router.push("/tracks"),
-    },
-    {
-      label: "مقالات البنيان",
-      emoji: "1f4dd", 
-      action: () => router.push("/articles"),
-    },
-    {
-      label: "اقتباسات الأئمة الأعلام",
-      emoji: "1f4dc", 
-      action: () => setShowQuotes(true),
-    },
-    {
-      label: "ترشيحات البنيان",
-      emoji: "1f3a7", 
-      action: () => router.push("/recommendations"),
-    },
-  ].map(({ label, emoji, action }) => (
+          <div className="grid grid-cols-2 gap-3 text-center mx-auto">
+            {[
+              {
+                label: "المسارات المنهجية",
+                emoji: "1f9e0",
+                action: () => router.push("/tracks"),
+              },
+              {
+                label: "مقالات البنيان",
+                emoji: "1f4dd",
+                action: () => router.push("/articles"),
+              },
+              {
+                label: "اقتباسات الأئمة الأعلام",
+                emoji: "1f4dc",
+                action: () => setShowQuotes(true),
+              },
+              {
+                label: "ترشيحات البنيان",
+                emoji: "1f3a7",
+                action: () => router.push("/recommendations"),
+              },
+            ].map(({ label, emoji, action }) => (
               <motion.button
                 key={label}
                 whileTap={{ scale: 0.97 }}
                 onClick={action}
-                className="arabic-stylish flex items-center gap-1 px-4 py-2.5 rounded-full text-sm"
+                className="arabic-stylish mx-auto text-center w-fit flex items-center justify-center gap-1 px-4 py-2.5 rounded-full text-sm"
                 style={{
                   backgroundColor: "rgba(18,30,23,0.03)",
                   border: "1px solid rgba(18,30,23,0.08)",
