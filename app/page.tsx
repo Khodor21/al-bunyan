@@ -302,7 +302,7 @@ function HomeScreen({
                 action: () => router.push("/articles"),
               },
               {
-                label: "اقتباسات أعلام الأمّة",
+                label: "اقتباسات الأعلام ",
                 emoji: "1f4dc",
                 action: () => setShowQuotes(true),
               },
@@ -316,7 +316,7 @@ function HomeScreen({
                 key={label}
                 whileTap={{ scale: 0.97 }}
                 onClick={action}
-                className="arabic-stylish w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm"
+                className="arabic-stylish w-fit flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full text-sm"
                 style={{
                   backgroundColor: "rgba(18,30,23,0.03)",
                   border: "1px solid rgba(18,30,23,0.08)",
