@@ -160,7 +160,7 @@ function HomeScreen() {
                 action: () => router.push("/articles"),
               },
               {
-                label: "اقتباسات الأئمة الأعلام",
+                label: "اقتباسات أعلام الأمّة",
                 emoji: "1f4dc",
                 action: () => setShowQuotes(true),
               },
@@ -182,7 +182,7 @@ function HomeScreen() {
                   fontFamily: "var(--font-sans-light)",
                 }}
               >
-                <UnifiedEmoji unified={emoji} size={16} />
+                <UnifiedEmoji unified={emoji} size={15} />
                 {label}
               </motion.button>
             ))}
