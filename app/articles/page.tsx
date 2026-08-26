@@ -54,25 +54,25 @@ const ARTICLES: Article[] = [
   },
   {
     id: "3",
-    title: "تاريخ العبيد والعبودية عبر الحضارات",
+    title: "فخ أستانا: عندما تسرق السياسة تضحيات السوريين",
     source: "تاريخ وسياسة",
     sourceInitial: "ت",
-    category: "بيان سبيل المجرمين",
+    category: "تصحيح المعايير",
     readTime: "١٥ دقيقة",
-    coverImage: "/blogs/Blog-1.jpg",
+    coverImage: "/blogs/Blog-3.jpg",
     url: "#",
-    country: "1f1f5-1f1f8",
+    country: "1f1f8-1f1fe",
   },
   {
     id: "4",
-    title: "العلوم التي سرقها الغرب من المسلمين: التاريخ المنسي",
+    title: "أبو عمار في فخ أوسلو: من بندقية الثائر إلى صك التنازل",
     source: "هدوء",
     sourceInitial: "هـ",
     category: "بيان سبيل المجرمين",
     readTime: "٣ دقائق",
-    coverImage: "/blogs/Blog-1.jpg",
+    coverImage: "/blogs/Blog-4.jpg",
     url: "#",
-    country: "1f1f8-1f1fe",
+    country: "1f1f5-1f1f8",
   },
 ];
 
@@ -81,7 +81,7 @@ const FILTERS = [
   "بيان سبيل المجرمين",
   "مقاومة التفاهة",
   "تصحيح المعايير",
-  "أدب",
+  "سنن الله",
 ];
 const STORAGE_KEY = "ss_saved_articles";
 
@@ -160,7 +160,7 @@ function ArticleCard({
       className="relative w-full cursor-pointer overflow-hidden"
       style={{
         borderRadius: "20px",
-        aspectRatio: "9/10",
+        aspectRatio: "9/9",
       }}
     >
       {/* Full-bleed background image */}
