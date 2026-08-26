@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { RiBookmarkLine, RiBookmarkFill } from "react-icons/ri";
+import { HiOutlineBookOpen } from "react-icons/hi2";
 import dynamic from "next/dynamic";
 
 const Emoji = dynamic(
@@ -23,7 +24,7 @@ interface Article {
   readTime: string;
   coverImage: string;
   url: string;
-  country: string; // Unified hex code for the flag emoji
+  country: string;
 }
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
@@ -38,7 +39,7 @@ const ARTICLES: Article[] = [
     readTime: "٢ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
-    country: "1f1e6-1f1eb", // Afghanistan Flag
+    country: "1f1e6-1f1eb",
   },
   {
     id: "2",
@@ -49,7 +50,7 @@ const ARTICLES: Article[] = [
     readTime: "١ دقيقة",
     coverImage: "/blogs/Blog-2.jpg",
     url: "#",
-    country: "1f1e7-1f1e6", // Egypt Flag
+    country: "1f1e7-1f1e6",
   },
   {
     id: "3",
@@ -60,7 +61,7 @@ const ARTICLES: Article[] = [
     readTime: "١٥ دقيقة",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
-    country: "1f1f5-1f1f8", // Palestine Flag
+    country: "1f1f5-1f1f8",
   },
   {
     id: "4",
@@ -71,7 +72,7 @@ const ARTICLES: Article[] = [
     readTime: "٣ دقائق",
     coverImage: "/blogs/Blog-1.jpg",
     url: "#",
-    country: "1f1f8-1f1fe", // Syria Flag
+    country: "1f1f8-1f1fe",
   },
 ];
 
@@ -132,6 +133,7 @@ function Toast({
     </AnimatePresence>
   );
 }
+
 // ── Article Card ──────────────────────────────────────────────────────────────
 
 function ArticleCard({
@@ -147,86 +149,92 @@ function ArticleCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        duration: 0.4,
+        duration: 0.45,
         ease: [0.16, 1, 0.3, 1],
-        delay: 0.08 + index * 0.06,
+        delay: 0.08 + index * 0.07,
       }}
-      whileTap={{ scale: 0.97 }}
-      className="rounded-lg overflow-hidden cursor-pointer flex flex-col relative z-10"
+      whileTap={{ scale: 0.98 }}
+      className="relative w-full cursor-pointer overflow-hidden"
       style={{
-        backgroundColor: "var(--color-cream)",
-        border: "1px solid rgba(18,30,23,0.08)",
+        borderRadius: "20px",
+        aspectRatio: "9/10",
       }}
     >
-      {/* Cover image & Flag */}
+      {/* Full-bleed background image */}
+      <img
+        src={article.coverImage}
+        alt={article.title}
+        className="absolute inset-0 w-full h-full object-cover"
+        draggable={false}
+      />
+
+      {/* Dark gradient overlay — heavier at bottom */}
       <div
-        className="relative w-full flex-shrink-0"
-        style={{ aspectRatio: "4/3" }}
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.72) 70%, rgba(0,0,0,0.88) 100%)",
+        }}
+      />
+
+      {/* Flag badge — top right */}
+      <div
+        className="absolute top-3 right-3 flex items-center justify-center z-10"
+        style={{
+          backgroundColor: "rgba(255, 254, 254, 0.35)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          border: "1px solid rgba(255,255,255,0.15)",
+          borderRadius: "8px",
+          padding: "3px 5px",
+        }}
       >
-        <img
-          src={article.coverImage}
-          alt={article.title}
-          className="w-full h-full object-cover"
-          draggable={false}
-        />
-        {/* Country Flag Overlay */}
-        <div className="absolute top-2 right-2 bg-black/30 backdrop-blur-md border border-white/10 rounded-md px-1.5 py-1 flex items-center justify-center z-10">
-          <Emoji unified={article.country} size={14} />
-        </div>
+        <Emoji unified={article.country} size={22} />
       </div>
 
-      {/* Card body */}
-      <div className="flex flex-col gap-1.5 flex-1 p-2.5 pb-2">
-        <div className="flex items-center gap-1.5">
-          {/* Category */}
-          <div
-            className="rounded-full flex-shrink-0 flex items-center justify-center text-[11px]"
-            style={{
-              color: "var(--color-forest)",
-            }}
-          >
-            {article.category}
-          </div>
-        </div>
-
+      {/* Bottom content */}
+      <div className="absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-3 p-3">
         {/* Title */}
         <p
-          className="text-sm mt-0.5"
+          className="leading-snug"
           style={{
-            color: "var(--color-darkest)",
+            color: "#ffffff",
             fontFamily: "var(--font-sans-medium)",
             display: "-webkit-box",
             WebkitLineClamp: 3,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
+            textShadow: "0 1px 4px rgba(0,0,0,0.4)",
           }}
         >
           {article.title}
         </p>
 
-        {/* Meta row */}
-        <div className="flex items-center justify-between mt-auto pt-1">
-          <span
-            className="text-[10px] opacity-60"
-            style={{
-              color: "var(--color-darkest)",
-              fontFamily: "var(--font-sans-light)",
-            }}
-          >
-            {article.readTime} قراءة
-          </span>
-
+        {/* Action buttons row */}
+        <div className="flex flex-row-reverse items-center gap-2">
+          {/* Save / Saved button */}
           <motion.button
-            whileTap={{ scale: 0.85 }}
+            whileTap={{ scale: 0.93 }}
             onClick={(e) => {
               e.stopPropagation();
               onToggleSave(article.id);
             }}
-            className="flex items-center justify-center rounded-full p-0.5"
-            style={{ background: "transparent", border: "none" }}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[14px] transition-all"
+            style={{
+              fontFamily: "var(--font-sans-light)",
+              backgroundColor: saved
+                ? "var(--color-forest)"
+                : "rgba(255,255,255,0.15)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              border: saved
+                ? "1px solid var(--color-forest)"
+                : "1px solid rgba(255,255,255,0.2)",
+              color: "#ffffff",
+            }}
           >
             <AnimatePresence mode="wait">
               <motion.span
@@ -235,20 +243,39 @@ function ArticleCard({
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.7, opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="flex"
-                style={{
-                  color: saved
-                    ? "var(--color-forest)"
-                    : "rgba(21, 23, 13, 0.3)",
-                }}
+                className="flex items-center gap-1.5"
               >
                 {saved ? (
-                  <RiBookmarkFill size={15} />
+                  <>
+                    <RiBookmarkFill size={14} />
+                    <span>تمت الإضافة</span>
+                  </>
                 ) : (
-                  <RiBookmarkLine size={15} />
+                  <>
+                    <RiBookmarkLine size={14} />
+                    <span>أضف للمفضلة</span>
+                  </>
                 )}
               </motion.span>
             </AnimatePresence>
+          </motion.button>
+
+          {/* Read button */}
+          <motion.button
+            whileTap={{ scale: 0.93 }}
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full text-xs"
+            style={{
+              fontFamily: "var(--font-sans-medium)",
+              backgroundColor: "rgba(255,255,255,0.15)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: "var(--color-cream)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+            }}
+          >
+            <HiOutlineBookOpen size={16} />
+            <span>اقرأ</span>
           </motion.button>
         </div>
       </div>
@@ -303,7 +330,6 @@ export default function BlogsPage() {
     });
   };
 
-  // Derive filtered articles based on the active filter state
   const filteredArticles =
     activeFilter === 0
       ? ARTICLES
@@ -320,7 +346,7 @@ export default function BlogsPage() {
         color: "var(--color-darkest)",
       }}
     >
-      {/* Ambient glow matching TracksPage */}
+      {/* Ambient glow */}
       <div
         className="absolute -top-20 left-1/2 -translate-x-1/2 w-[120%] h-48 rounded-full blur-3xl pointer-events-none opacity-15 z-0"
         style={{
@@ -339,21 +365,19 @@ export default function BlogsPage() {
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => router.back()}
-          className="arabic-stylish p-2 rounded-full text-base"
+          className="p-2 rounded-full text-base"
           style={{
             backgroundColor: "rgba(18,30,23,0.03)",
             border: "1px solid rgba(18,30,23,0.08)",
             color: "var(--color-darkest)",
-            fontFamily: "var(--font-sans-light)",
           }}
         >
           <MdOutlineKeyboardArrowRight size={14} />
         </motion.button>
 
-        {/* SVG Title */}
         <motion.img
           src="/titles/Blogs-Title.svg"
-          alt="المسارات المنهجية"
+          alt="المقالات"
           draggable={false}
           initial={{ opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -404,7 +428,7 @@ export default function BlogsPage() {
       </motion.div>
 
       {/* ── Section header ── */}
-      <div className="flex items-center justify-between px-4 pb-3 pt-2 relative z-10">
+      <div className="flex items-center justify-between px-4 pb-3 pt-1 relative z-10">
         <span
           className="text-sm tracking-wider uppercase opacity-60"
           style={{
@@ -425,12 +449,12 @@ export default function BlogsPage() {
         </span>
       </div>
 
-      {/* ── Grid ── */}
+      {/* ── Single-column vertical stack ── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.12 }}
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 px-4 pb-14 md:pb-28 flex-1 relative z-10"
+        className="flex flex-col gap-3 px-4 pb-14 md:pb-28 flex-1 relative z-10"
       >
         <AnimatePresence mode="popLayout">
           {filteredArticles.map((article, index) => (
@@ -445,7 +469,6 @@ export default function BlogsPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* ── Toast ── */}
       <Toast
         message={toast.message}
         visible={toast.visible}

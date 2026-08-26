@@ -8,6 +8,7 @@ import { AiOutlineUser } from "react-icons/ai";
 import { RiBookmarkLine } from "react-icons/ri";
 import type { AuthUser } from "@/types/auth";
 import QuotesView from "./components/QuotesView";
+
 const UnifiedEmoji = dynamic(
   () => import("emoji-picker-react").then((mod) => mod.Emoji),
   { ssr: false },
@@ -103,60 +104,44 @@ function HomeScreen() {
           }}
         />
 
-        <div className="flex flex-col gap-4 abosulte top-8 left-0 right-0 ">
-          <div className="flex justify-between">
-            <img src="/Logo.svg" alt="logo" className="w-14 h-14" />
-            <div className="flex items-center justify-end text-left gap-[6px]">
-              <div className="">
-                <motion.button
-                  whileTap={{ scale: 0.92 }}
-                  onClick={() => router.push("/profile")}
-                  className="w-13 h-13 flex items-center justify-center"
-                >
-                  <AiOutlineUser
-                    size={22}
-                    style={{ color: "var(--color-darkest)" }}
-                  />
-                </motion.button>
-              </div>
-              <div className="">
-                <motion.button
-                  whileTap={{ scale: 0.92 }}
-                  onClick={() => router.push("/saved")}
-                  className="w-13 h-13 flex items-center justify-center"
-                >
-                  <RiBookmarkLine
-                    size={20}
-                    style={{ color: "var(--color-darkest)" }}
-                  />
-                </motion.button>
-              </div>
-            </div>
+        {/* Top Navigation Bar */}
+        <div className="flex items-center gap-[6px] absolute top-8 left-6 z-20">
+          <div className="">
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={() => router.push("/profile")}
+              className="w-13 h-13 flex items-center justify-center"
+            >
+              <AiOutlineUser
+                size={22}
+                style={{ color: "var(--color-darkest)/80" }}
+              />
+            </motion.button>
           </div>
-
-          <div>
-            <motion.img
-              key="Kouuki"
-              src="/hero/Hero Banner.1.jpg"
-              alt="Hey"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className=" w-full mx-auto"
-            />
+          <div className="">
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={() => router.push("/saved")}
+              className="w-13 h-13 flex items-center justify-center"
+            >
+              <RiBookmarkLine
+                size={20}
+                style={{ color: "var(--color-darkest)" }}
+              />
+            </motion.button>
           </div>
         </div>
+
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto z-10 pb-12 gap-10"
+          className="flex-1 flex flex-col justify-center max-w-lg w-full mx-auto z-10 pb-12 gap-10"
         >
           <div className="flex-1" />
 
           {/* Hero Slider */}
-          {/* <HeroSlider /> */}
+          <HeroSlider />
 
           {/* Spacer for dots */}
           <div className="h-2" />
