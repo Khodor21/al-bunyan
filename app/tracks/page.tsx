@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import tracksData from "@/data/tracks.json";
 import TopNavbar from "../../components/TopNavbar";
+import type { AuthUser } from "@/types/auth";
 
 // ── Types ──────────────────────────────────────────────────
 interface Track {
@@ -22,7 +23,7 @@ interface Track {
   image?: string;
 }
 
-// ── Featured Card (ثمانية style) ───────────────────────────
+// ── Featured Card ──────────────────────────────────────────
 function FeaturedTrackCard({
   track,
   onClick,
@@ -39,7 +40,6 @@ function FeaturedTrackCard({
       onClick={onClick}
       className="cursor-pointer w-full mb-6"
     >
-      {/* Image container — tall aspect ratio like ثمانية */}
       <div
         className="relative w-full rounded-2xl overflow-hidden"
         style={{ aspectRatio: "3/4" }}
@@ -59,7 +59,6 @@ function FeaturedTrackCard({
           />
         )}
 
-        {/* Gradient overlay — bottom */}
         <div
           className="absolute inset-0"
           style={{
@@ -68,7 +67,6 @@ function FeaturedTrackCard({
           }}
         />
 
-        {/* Top-right label chip */}
         {track.featureLabel && (
           <div className="absolute top-3 left-3">
             <span
@@ -86,7 +84,6 @@ function FeaturedTrackCard({
           </div>
         )}
 
-        {/* Bottom text */}
         <div className="absolute bottom-0 right-0 left-0 p-4">
           <h2
             className="text-white text-lg leading-snug mb-1"
@@ -103,8 +100,6 @@ function FeaturedTrackCard({
           >
             {track.description}
           </p>
-
-          {/* Meta row */}
           <div
             className="flex items-center gap-3 mt-3 text-[11px]"
             style={{
@@ -122,7 +117,7 @@ function FeaturedTrackCard({
   );
 }
 
-// ── Grid Card (non-featured) ───────────────────────────────
+// ── Grid Card ──────────────────────────────────────────────
 function GridTrackCard({
   track,
   onClick,
@@ -141,7 +136,6 @@ function GridTrackCard({
       onClick={onClick}
       className="cursor-pointer flex flex-col gap-2"
     >
-      {/* Square image */}
       <div
         className="relative w-full rounded-xl overflow-hidden"
         style={{ aspectRatio: "1/1" }}
@@ -161,16 +155,7 @@ function GridTrackCard({
             📚
           </div>
         )}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(10,18,14,0.7) 0%, transparent 60%)",
-          }}
-        />
       </div>
-
-      {/* Text below image */}
       <div className="flex flex-col gap-0.5 px-0.5">
         <h3
           className="text-xs leading-snug line-clamp-2"
@@ -180,10 +165,7 @@ function GridTrackCard({
         </h3>
         <span
           className="text-[10px]"
-          style={{
-            fontFamily: "var(--font-sans-light)",
-            opacity: 0.45,
-          }}
+          style={{ fontFamily: "var(--font-sans-light)", opacity: 0.45 }}
         >
           {track.lessonsCount} درس · {track.duration}
         </span>
@@ -195,14 +177,44 @@ function GridTrackCard({
 // ── Page ───────────────────────────────────────────────────
 export default function TracksPage() {
   const router = useRouter();
-  const { tracks } = tracksData;
+  const [user, setUser] = useState<AuthUser | null>(null);
 
+  const { tracks } = tracksData;
   const featuredTrack = tracks.find((t) => t.mainFeature);
   const gridTracks = tracks.filter((t) => !t.mainFeature);
 
+  // Fetch session — same pattern as HomePage
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const { user: u } = await res.json();
+          setUser(u);
+        } else {
+          router.replace("/");
+        }
+      } catch {
+        router.replace("/");
+      }
+    };
+    checkSession();
+  }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } finally {
+      window.location.href = "/";
+    }
+  };
+
   return (
     <div
-      className="min-h-dvh overflow-x-hidden w-screen flex flex-col relative overflow-x-hidden"
+      className="min-h-dvh overflow-x-hidden w-screen flex flex-col relative"
       dir="rtl"
       style={{
         backgroundColor: "var(--color-cream)",
@@ -218,13 +230,14 @@ export default function TracksPage() {
         }}
       />
 
-      <div className="p-4 z-10">
-        <TopNavbar />
-      </div>
+      {user && (
+        <div className="p-4 z-10">
+          <TopNavbar user={user} onLogout={handleLogout} />
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 px-4 pb-12 max-w-md w-full mx-auto z-10">
-        {/* Featured track */}
         {featuredTrack && (
           <FeaturedTrackCard
             track={featuredTrack as Track}
@@ -232,7 +245,6 @@ export default function TracksPage() {
           />
         )}
 
-        {/* Grid tracks — only rendered if there are non-featured tracks */}
         {gridTracks.length > 0 && (
           <div className="flex flex-col gap-3">
             <p
