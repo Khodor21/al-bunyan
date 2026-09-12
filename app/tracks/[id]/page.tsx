@@ -4,28 +4,27 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
-import { HiOutlineBookOpen } from "react-icons/hi2";
-import { PiHeadphones, PiFilmSlate } from "react-icons/pi";
+import { Emoji } from "emoji-picker-react";
 import tracksData from "@/data/tracks.json";
 
 // Type badge config
 const TYPE_CONFIG: Record<
   string,
-  { label: string; icon: React.ReactNode; color: string }
+  { label: string; unified: string; color: string }
 > = {
   "مقرر مقروء": {
     label: "مقرر مقروء",
-    icon: <HiOutlineBookOpen size={11} />,
+    unified: "1f4d6",
     color: "rgba(60,100,70,0.12)",
   },
   "مقرر مسموع": {
     label: "مقرر مسموع",
-    icon: <PiHeadphones size={11} />,
+    unified: "1f3a7",
     color: "rgba(90,60,120,0.10)",
   },
   "مقرر مرئي": {
     label: "مقرر مرئي",
-    icon: <PiFilmSlate size={11} />,
+    unified: "1f3ac",
     color: "rgba(160,90,30,0.10)",
   },
 };
@@ -144,7 +143,6 @@ export default function TrackDetailPage({ params }: PageProps) {
             </span>
           </div>
           <div className="w-px h-3 bg-[rgba(18,30,23,0.15)]" />
-
           <div>
             <span className="block text-sm font-bold" style={{ opacity: 1 }}>
               {track.duration}
@@ -171,7 +169,7 @@ export default function TrackDetailPage({ params }: PageProps) {
           {track.مقررات.map((item, idx) => {
             const typeConf = TYPE_CONFIG[item.type] ?? {
               label: item.type,
-              icon: null,
+              unified: "1f4d6",
               color: "rgba(18,30,23,0.08)",
             };
 
@@ -187,8 +185,8 @@ export default function TrackDetailPage({ params }: PageProps) {
                 }
                 className="flex items-center gap-3 py-3 rounded-2xl cursor-pointer transition-all"
               >
-                {/* SVG thumbnail */}
-                <div className="relative w-14 h-14 rounded-base overflow-hidden shrink-0 bg-[rgba(18,30,23,0.05)]">
+                {/* Thumbnail */}
+                <div className="relative w-16 h-16 rounded-base overflow-hidden shrink-0 bg-[rgba(18,30,23,0.05)]">
                   <Image
                     src={item.image}
                     alt={item.title}
@@ -200,22 +198,29 @@ export default function TrackDetailPage({ params }: PageProps) {
                 {/* Info */}
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                   <h3
-                    className="text-xs leading-snug truncate"
+                    className="text-base leading-snug truncate"
                     style={{ fontFamily: "var(--font-sans-medium)" }}
                   >
                     {item.title}
                   </h3>
-
+                  {/* Description preview */}
+                  {"description" in item && item.description && (
+                    <p
+                      className="text-xs opacity-50 leading-snug line-clamp-2"
+                      style={{ fontFamily: "var(--font-sans-light)" }}
+                    >
+                      {item.description as string}
+                    </p>
+                  )}
                   {/* Type badge */}
                   <span
-                    className="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded-full text-[10px]"
+                    className="inline-flex items-center gap-1 self-start text-sm"
                     style={{
                       fontFamily: "var(--font-sans-light)",
-                      backgroundColor: typeConf.color,
                       color: "var(--color-darkest)",
                     }}
                   >
-                    {typeConf.icon}
+                    <Emoji unified={typeConf.unified} size={11} />
                     {typeConf.label}
                   </span>
 
@@ -226,11 +231,6 @@ export default function TrackDetailPage({ params }: PageProps) {
                     {item.duration}
                   </span>
                 </div>
-
-                <MdOutlineKeyboardArrowRight
-                  size={16}
-                  className="rotate-180 opacity-30 shrink-0"
-                />
               </motion.div>
             );
           })}

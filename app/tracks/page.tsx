@@ -38,11 +38,12 @@ function FeaturedTrackCard({
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       whileTap={{ scale: 0.985 }}
       onClick={onClick}
-      className="cursor-pointer w-full mb-6"
+      className="cursor-pointer w-full mb-6 flex flex-col gap-3"
     >
+      {/* Image */}
       <div
-        className="relative w-full rounded-2xl overflow-hidden"
-        style={{ aspectRatio: "3/4" }}
+        className="relative w-full rounded-md overflow-hidden"
+        style={{ aspectRatio: "1/1" }}
       >
         {track.image ? (
           <Image
@@ -58,65 +59,42 @@ function FeaturedTrackCard({
             style={{ backgroundColor: "rgba(18,30,23,0.08)" }}
           />
         )}
+      </div>
 
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(10,18,14,0.92) 0%, rgba(10,18,14,0.4) 45%, transparent 70%)",
-          }}
-        />
-
+      {/* Text below image */}
+      <div className="flex flex-col text-center gap-1 px-0.5">
         {track.featureLabel && (
-          <div className="absolute top-3 left-3">
-            <span
-              className="px-2.5 py-1 rounded-full text-[10px]"
-              style={{
-                fontFamily: "var(--font-sans-medium)",
-                backgroundColor: "rgba(255,255,255,0.15)",
-                backdropFilter: "blur(8px)",
-                color: "rgba(255,255,255,0.9)",
-                border: "1px solid rgba(255,255,255,0.15)",
-              }}
-            >
-              {track.featureLabel}
-            </span>
-          </div>
+          <span
+            className="text-[10px] opacity-50"
+            style={{ fontFamily: "var(--font-sans-light)" }}
+          >
+            {track.featureLabel}
+          </span>
         )}
-
-        <div className="absolute bottom-0 right-0 left-0 p-4">
-          <h2
-            className="text-white text-lg leading-snug mb-1"
-            style={{ fontFamily: "var(--font-sans-medium)" }}
-          >
-            {track.title}
-          </h2>
-          <p
-            className="text-xs leading-relaxed line-clamp-2"
-            style={{
-              fontFamily: "var(--font-sans-light)",
-              color: "rgba(255,255,255,0.7)",
-            }}
-          >
-            {track.description}
-          </p>
-          <div
-            className="flex items-center gap-3 mt-3 text-[11px]"
-            style={{
-              fontFamily: "var(--font-sans-light)",
-              color: "rgba(255,255,255,0.5)",
-            }}
-          >
-            <span>{track.lessonsCount} درس</span>
-            <span>·</span>
-            <span>{track.duration}</span>
-          </div>
-        </div>
+        <h2
+          className="text-base leading-snug"
+          style={{ fontFamily: "var(--font-sans-medium)" }}
+        >
+          {track.title}
+        </h2>
+        <p
+          className="text-xs leading-relaxed line-clamp-2 opacity-60"
+          style={{ fontFamily: "var(--font-sans-light)" }}
+        >
+          {track.description}
+        </p>
+        {/* <div
+          className="flex items-center gap-3 mt-1 text-[11px] opacity-40"
+          style={{ fontFamily: "var(--font-sans-light)" }}
+        >
+          <span>{track.lessonsCount} درس</span>
+          <span>·</span>
+          <span>{track.duration}</span>
+        </div> */}
       </div>
     </motion.div>
   );
 }
-
 // ── Grid Card ──────────────────────────────────────────────
 function GridTrackCard({
   track,

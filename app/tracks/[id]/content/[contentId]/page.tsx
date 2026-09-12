@@ -11,16 +11,16 @@ import {
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { HiOutlineBookOpen } from "react-icons/hi2";
 import { PiDownloadSimple, PiCheckFat } from "react-icons/pi";
+import { Emoji } from "emoji-picker-react";
 
 // ── Content Database ───────────────────────────────────────
 const ARTICLES_DATA = [
   {
-    id: "1",
+    id: "1-1",
     trackId: "1",
     title: "المسار التأسيسي - المفاهيم الفكرية والاقتصادية",
     type: "مقرر مقروء" as const,
-    pdfPath: "/tracks/Track One/المسار التأسيسي.pdf",
-    readingMinutes: 10,
+    readingMinutes: 2,
     sections: [
       {
         id: "s1",
@@ -80,7 +80,7 @@ const ARTICLES_DATA = [
   },
   // You can add ID 2 here later
   {
-    id: "3",
+    id: "1-3",
     trackId: "3",
     title: "العلمانية — المفهوم والمصطلح",
     type: "مقرر مقروء" as const,
@@ -138,7 +138,11 @@ const ARTICLES_DATA = [
     ],
   },
 ];
-
+const TYPE_CONFIG: Record<string, { unified: string }> = {
+  "مقرر مقروء": { unified: "1f4d6" },
+  "مقرر مسموع": { unified: "1f3a7" },
+  "مقرر مرئي": { unified: "1f3ac" },
+};
 // ── Helpers ────────────────────────────────────────────────
 function useScrollProgress(ref: React.RefObject<HTMLElement>) {
   const [progress, setProgress] = useState(0);
@@ -164,7 +168,11 @@ function useScrollProgress(ref: React.RefObject<HTMLElement>) {
 }
 
 // ── Component ──────────────────────────────────────────────
-export default function ContentPage() {
+export default function ContentPage({
+  params,
+}: {
+  params: { id: string; contentId: string };
+}) {
   const router = useRouter();
   const articleRef = useRef<HTMLDivElement>(null!);
   const { progress, completed } = useScrollProgress(articleRef);
@@ -172,8 +180,8 @@ export default function ContentPage() {
 
   // Defaulting to the first article (id: "1") for display purposes.
   // In a real scenario, this would likely be determined by a URL parameter.
-  const ARTICLE = ARTICLES_DATA.find((a) => a.id === "1") || ARTICLES_DATA[0];
-
+  const ARTICLE =
+    ARTICLES_DATA.find((a) => a.id === params.contentId) || ARTICLES_DATA[0];
   const circumference = 2 * Math.PI * 11; // r=11
 
   return (
@@ -218,22 +226,22 @@ export default function ContentPage() {
           >
             <MdOutlineKeyboardArrowRight size={14} />
           </motion.button>
-
-          {/* Type badge */}
           <span
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px]"
+            className="inline-flex items-center gap-1.5  py-1 rounded-full text-sm"
             style={{
               fontFamily: "var(--font-sans-light)",
-              backgroundColor: "rgba(60,100,70,0.10)",
               color: "var(--color-darkest)",
             }}
           >
-            <HiOutlineBookOpen size={12} />
+            <Emoji
+              unified={TYPE_CONFIG[ARTICLE.type]?.unified ?? "1f4d6"}
+              size={15}
+            />
             {ARTICLE.type}
           </span>
-
+          <div></div>
           {/* Circular progress */}
-          <div className="relative w-8 h-8 flex items-center justify-center">
+          {/* <div className="relative w-8 h-8 flex items-center justify-center">
             <svg width="32" height="32" className="-rotate-90">
               <circle
                 cx="16"
@@ -265,7 +273,7 @@ export default function ContentPage() {
             >
               {Math.round(progress * 100)}
             </span>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -339,23 +347,24 @@ export default function ContentPage() {
       >
         <div className="max-w-md mx-auto flex flex-col gap-3">
           {/* PDF download — always visible */}
-          <motion.a
-            href={ARTICLE.pdfPath}
-            download
-            whileTap={{ scale: 0.97 }}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-xs transition-all"
-            style={{
-              fontFamily: "var(--font-sans-medium)",
-              backgroundColor: "rgba(18,30,23,0.04)",
-              border: "1px solid rgba(18,30,23,0.08)",
-              color: "var(--color-darkest)",
-              textDecoration: "none",
-            }}
-          >
-            <PiDownloadSimple size={15} />
-            تحميل المقرر PDF
-          </motion.a>
-
+          {ARTICLE.pdfPath && (
+            <motion.a
+              href={ARTICLE.pdfPath}
+              download
+              whileTap={{ scale: 0.97 }}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-xs transition-all"
+              style={{
+                fontFamily: "var(--font-sans-medium)",
+                backgroundColor: "rgba(18,30,23,0.04)",
+                border: "1px solid rgba(18,30,23,0.08)",
+                color: "var(--color-darkest)",
+                textDecoration: "none",
+              }}
+            >
+              <PiDownloadSimple size={15} />
+              تحميل المقرر PDF
+            </motion.a>
+          )}
           {/* Complete button — appears when near end */}
           <AnimatePresence>
             {completed && (

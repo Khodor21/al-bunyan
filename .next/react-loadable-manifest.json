@@ -2,21 +2,21 @@
   "app\\articles\\page.tsx -> emoji-picker-react": {
     "id": 4834,
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
+      "static/chunks/fcfb803e-e60a99e02fe0eafc.js",
       "static/chunks/605.982a5eaa8586435a.js"
     ]
   },
   "app\\components\\InstallView.tsx -> emoji-picker-react": {
     "id": 4834,
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
+      "static/chunks/fcfb803e-e60a99e02fe0eafc.js",
       "static/chunks/605.982a5eaa8586435a.js"
     ]
   },
   "app\\components\\LoginView.tsx -> emoji-picker-react": {
     "id": 4834,
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
+      "static/chunks/fcfb803e-e60a99e02fe0eafc.js",
       "static/chunks/605.982a5eaa8586435a.js"
     ]
   },
@@ -37,28 +37,28 @@
   "app\\page.tsx -> emoji-picker-react": {
     "id": 4834,
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
+      "static/chunks/fcfb803e-e60a99e02fe0eafc.js",
       "static/chunks/605.982a5eaa8586435a.js"
     ]
   },
   "app\\profile\\page.tsx -> emoji-picker-react": {
     "id": 4834,
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
+      "static/chunks/fcfb803e-e60a99e02fe0eafc.js",
       "static/chunks/605.982a5eaa8586435a.js"
     ]
   },
   "app\\recommendations\\page.tsx -> emoji-picker-react": {
     "id": 4834,
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
+      "static/chunks/fcfb803e-e60a99e02fe0eafc.js",
       "static/chunks/605.982a5eaa8586435a.js"
     ]
   },
   "app\\saved\\page.tsx -> emoji-picker-react": {
     "id": 4834,
     "files": [
-      "static/chunks/fcfb803e.5c6321e2ee18bbad.js",
+      "static/chunks/fcfb803e-e60a99e02fe0eafc.js",
       "static/chunks/605.982a5eaa8586435a.js"
     ]
   }
