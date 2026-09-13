@@ -157,7 +157,7 @@ export default function TrackDetailPage({ params }: PageProps) {
       </motion.div>
 
       {/* مقررات List */}
-      <div className="flex-1 px-6 pb-12 max-w-md w-full mx-auto z-10">
+      <div className="flex-1 px-3 pb-12 max-w-md w-full mx-auto z-10">
         <p
           className="text-xs mb-3"
           style={{ fontFamily: "var(--font-sans-medium)" }}
@@ -203,15 +203,7 @@ export default function TrackDetailPage({ params }: PageProps) {
                   >
                     {item.title}
                   </h3>
-                  {/* Description preview */}
-                  {"description" in item && item.description && (
-                    <p
-                      className="text-xs opacity-50 leading-snug line-clamp-2"
-                      style={{ fontFamily: "var(--font-sans-light)" }}
-                    >
-                      {item.description as string}
-                    </p>
-                  )}
+
                   {/* Type badge */}
                   <span
                     className="inline-flex items-center gap-1 self-start text-sm"

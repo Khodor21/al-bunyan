@@ -151,7 +151,13 @@ export default function TopNavbar({
     <div className="flex items-center justify-between relative z-30 w-full mb-6">
       {/* Logo */}
       <div className="flex-shrink-0">
-        <img src="/Logo.svg" alt="Logo" className="w-14 h-14 object-contain" />
+        <a href="/">
+          <img
+            src="/Logo.svg"
+            alt="Logo"
+            className="w-14 h-14 object-contain"
+          />
+        </a>
       </div>
 
       {/* Profile Area */}
