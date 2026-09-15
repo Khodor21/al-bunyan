@@ -1,6 +1,19 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth-status/route": "app/api/auth-status/route.js",
+  "/api/auth/logout/route": "app/api/auth/logout/route.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/notifications/register-token/route": "app/api/notifications/register-token/route.js",
+  "/api/auth/signup/route": "app/api/auth/signup/route.js",
+  "/articles/page": "app/articles/page.js",
+  "/profile/page": "app/profile/page.js",
   "/page": "app/page.js",
-  "/tracks/page": "app/tracks/page.js",
+  "/tracks/[id]/content/[contentId]/page": "app/tracks/[id]/content/[contentId]/page.js",
   "/tracks/[id]/page": "app/tracks/[id]/page.js",
-  "/tracks/[id]/content/[contentId]/page": "app/tracks/[id]/content/[contentId]/page.js"
+  "/tracks/page": "app/tracks/page.js",
+  "/recommendations/page": "app/recommendations/page.js",
+  "/saved/page": "app/saved/page.js",
+  "/api/progress/[contentId]/route": "app/api/progress/[contentId]/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/progress/track/[trackId]/route": "app/api/progress/track/[trackId]/route.js"
 }

@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { Emoji } from "emoji-picker-react";
+import { PiCheckFat } from "react-icons/pi";
 import tracksData from "@/data/tracks.json";
+import { useTrackProgress } from "@/hooks/useTrackProgress";
 
-// Type badge config
+// ── Type badge config ──────────────────────────────────────
 const TYPE_CONFIG: Record<
   string,
   { label: string; unified: string; color: string }
@@ -37,6 +39,10 @@ export default function TrackDetailPage({ params }: PageProps) {
   const router = useRouter();
   const track = tracksData.tracks.find((t) => t.id === params.id);
 
+  // All content IDs for this track — stable reference for the hook
+  const contentIds = track?.مقررات.map((m) => m.id) ?? [];
+  const { stats, status } = useTrackProgress(params.id, contentIds);
+
   if (!track) {
     return (
       <div
@@ -53,6 +59,13 @@ export default function TrackDetailPage({ params }: PageProps) {
       </div>
     );
   }
+
+  // ── Derived values ─────────────────────────────────────────
+  const totalMaqarrat = track.مقررات.length;
+  const completedCount = stats?.completedCount ?? 0;
+  const quizScoreSum = stats?.quizScoreSum ?? 0;
+  const quizTotalSum = stats?.quizTotalSum ?? 0;
+  const hasQuizData = quizTotalSum > 0;
 
   return (
     <div
@@ -101,7 +114,6 @@ export default function TrackDetailPage({ params }: PageProps) {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
         className="flex flex-col items-center px-6 text-center z-10 mb-8"
       >
-        {/* Cover image */}
         {track.image && (
           <div className="relative w-[240px] h-[240px] rounded-xl overflow-hidden mb-4 shadow-sm">
             <Image
@@ -127,14 +139,15 @@ export default function TrackDetailPage({ params }: PageProps) {
           {track.description}
         </p>
 
-        {/* Stats */}
+        {/* ── Stats ── */}
         <div
           className="flex items-center gap-6 text-xs"
           style={{ fontFamily: "var(--font-sans-medium)", opacity: 0.8 }}
         >
-          <div>
-            <span className="block text-sm font-bold" style={{ opacity: 1 }}>
-              {track.مقررات.length}
+          {/* Total مقررات — always static */}
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-sm font-bold" style={{ opacity: 1 }}>
+              {totalMaqarrat}
             </span>
             <span
               style={{ opacity: 0.5, fontFamily: "var(--font-sans-light)" }}
@@ -142,17 +155,59 @@ export default function TrackDetailPage({ params }: PageProps) {
               مقررات
             </span>
           </div>
+
           <div className="w-px h-3 bg-[rgba(18,30,23,0.15)]" />
-          <div>
-            <span className="block text-sm font-bold" style={{ opacity: 1 }}>
-              {track.duration}
-            </span>
+
+          {/* Completed مقررات */}
+          <div className="flex flex-col items-center gap-0.5">
+            {status === "loading" ? (
+              <span
+                className="text-sm font-bold opacity-20"
+                style={{ opacity: 1 }}
+              >
+                —
+              </span>
+            ) : (
+              <span
+                className="text-sm font-bold flex items-center gap-1"
+                style={{
+                  opacity: 1,
+                  color: completedCount > 0 ? "var(--color-forest)" : undefined,
+                }}
+              >
+                {completedCount > 0 && <PiCheckFat size={12} />}
+                {completedCount}/{totalMaqarrat}
+              </span>
+            )}
             <span
               style={{ opacity: 0.5, fontFamily: "var(--font-sans-light)" }}
             >
-              المدة
+              مكتمل
             </span>
           </div>
+
+          {/* Quiz total — only shown if any quiz was taken */}
+          {(hasQuizData || status === "loading") && (
+            <>
+              <div className="w-px h-3 bg-[rgba(18,30,23,0.15)]" />
+              <div className="flex flex-col items-center gap-0.5">
+                {status === "loading" ? (
+                  <span className="text-sm font-bold" style={{ opacity: 0.2 }}>
+                    —
+                  </span>
+                ) : (
+                  <span className="text-sm font-bold" style={{ opacity: 1 }}>
+                    {quizScoreSum}/{quizTotalSum}
+                  </span>
+                )}
+                <span
+                  style={{ opacity: 0.5, fontFamily: "var(--font-sans-light)" }}
+                >
+                  الاختبارات
+                </span>
+              </div>
+            </>
+          )}
         </div>
       </motion.div>
 
@@ -172,6 +227,7 @@ export default function TrackDetailPage({ params }: PageProps) {
               unified: "1f4d6",
               color: "rgba(18,30,23,0.08)",
             };
+            const isDone = stats?.progressMap[item.id]?.completed ?? false;
 
             return (
               <motion.div
@@ -193,18 +249,29 @@ export default function TrackDetailPage({ params }: PageProps) {
                     fill
                     className="object-cover"
                   />
+                  {/* Done overlay */}
+                  {isDone && (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ backgroundColor: "rgba(30,70,40,0.55)" }}
+                    >
+                      <PiCheckFat size={20} color="#fff" />
+                    </div>
+                  )}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                   <h3
                     className="text-base leading-snug truncate"
-                    style={{ fontFamily: "var(--font-sans-medium)" }}
+                    style={{
+                      fontFamily: "var(--font-sans-medium)",
+                      opacity: isDone ? 0.5 : 1,
+                    }}
                   >
                     {item.title}
                   </h3>
 
-                  {/* Type badge */}
                   <span
                     className="inline-flex items-center gap-1 self-start text-sm"
                     style={{
@@ -223,6 +290,21 @@ export default function TrackDetailPage({ params }: PageProps) {
                     {item.duration}
                   </span>
                 </div>
+
+                {/* Per-item quiz score badge */}
+                {stats?.progressMap[item.id]?.quiz_total != null && (
+                  <span
+                    className="text-xs shrink-0 px-2 py-0.5 rounded-full"
+                    style={{
+                      fontFamily: "var(--font-sans-light)",
+                      backgroundColor: "rgba(18,30,23,0.05)",
+                      opacity: 0.7,
+                    }}
+                  >
+                    {stats.progressMap[item.id].quiz_score}/
+                    {stats.progressMap[item.id].quiz_total}
+                  </span>
+                )}
               </motion.div>
             );
           })}
