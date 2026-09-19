@@ -8,7 +8,9 @@ import { RiBookmarkLine } from "react-icons/ri";
 import { MdOutlineSettings } from "react-icons/md";
 import type { AuthUser } from "@/types/auth";
 
-// ─── Profile Dropdown Modal ───────────────────────────────────────────────────
+const AI_ONBOARDING_KEY = "baniyan_ai_onboarding_seen";
+
+// ─── Profile Dropdown ─────────────────────────────────────────────────────────
 function ProfileDropdown({
   user,
   onClose,
@@ -24,7 +26,6 @@ function ProfileDropdown({
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -73,7 +74,6 @@ function ProfileDropdown({
           </span>
         </div>
 
-        {/* الحساب الشخصي */}
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => {
@@ -95,7 +95,6 @@ function ProfileDropdown({
           <span>الحساب الشخصي</span>
         </motion.button>
 
-        {/* المحفوظات */}
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => {
@@ -114,7 +113,6 @@ function ProfileDropdown({
           <span>المحفوظات</span>
         </motion.button>
 
-        {/* تسجيل الخروج */}
         <motion.button
           whileTap={{ scale: 0.97 }}
           onClick={() => {
@@ -136,6 +134,111 @@ function ProfileDropdown({
   );
 }
 
+// ─── AI Onboarding Modal ──────────────────────────────────────────────────────
+function AIOnboardingModal({ onClose }: { onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      {/* Backdrop */}
+      <motion.div
+        key="backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-[100] flex items-end justify-center pb-10 px-5"
+        style={{
+          backgroundColor: "rgba(18,30,23,0.35)",
+          backdropFilter: "blur(4px)",
+        }}
+        onClick={onClose}
+      >
+        {/* Card */}
+        <motion.div
+          key="card"
+          initial={{ opacity: 0, y: 32, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 24, scale: 0.96 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-full max-w-sm rounded-3xl overflow-hidden"
+          dir="rtl"
+          style={{
+            backgroundColor: "var(--color-cream)",
+            border: "1px solid rgba(18,30,23,0.08)",
+          }}
+        >
+          {/* Icon area */}
+          <div
+            className="flex items-center justify-center pt-8 pb-4"
+            style={{ background: "rgba(18,30,23,0.03)" }}
+          >
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+              style={{
+                backgroundColor: "var(--color-forest)",
+                boxShadow: "0 4px 20px rgba(18,30,23,0.2)",
+              }}
+            >
+              🤖
+            </div>
+          </div>
+
+          {/* Text */}
+          <div className="px-6 pt-4 pb-2 text-center">
+            <p
+              className="text-base mb-2"
+              style={{
+                fontFamily: "var(--font-sans-medium)",
+                color: "var(--color-darkest)",
+              }}
+            >
+              مساعد البنيان الذكي
+            </p>
+            <p
+              className="text-sm leading-relaxed"
+              style={{
+                fontFamily: "var(--font-sans-light)",
+                color: "rgba(18,30,23,0.65)",
+              }}
+            >
+              اسأل عن أي حدث أو شخصية في التاريخ الإسلامي المعاصر، وسيجيبك
+              المساعد بناءً على محتوى المنصة.
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-2 px-6 py-5">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={onClose}
+              className="w-full py-3 rounded-2xl text-sm text-center"
+              style={{
+                backgroundColor: "var(--color-forest)",
+                color: "var(--color-cream)",
+                fontFamily: "var(--font-sans-medium)",
+              }}
+            >
+              فهمت، لنبدأ
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={onClose}
+              className="w-full py-2.5 rounded-2xl text-xs text-center"
+              style={{
+                color: "rgba(18,30,23,0.45)",
+                fontFamily: "var(--font-sans-light)",
+                background: "transparent",
+              }}
+            >
+              إغلاق
+            </motion.button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 // ─── Top Navbar ───────────────────────────────────────────────────────────────
 export default function TopNavbar({
   user,
@@ -145,47 +248,99 @@ export default function TopNavbar({
   onLogout: () => void;
 }) {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
   const router = useRouter();
 
+  // Show onboarding modal once on first visit
+  useEffect(() => {
+    const seen = localStorage.getItem(AI_ONBOARDING_KEY);
+    if (!seen) {
+      // Small delay so the page settles first
+      const t = setTimeout(() => setShowAIModal(true), 800);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
+  const handleCloseAIModal = () => {
+    setShowAIModal(false);
+    localStorage.setItem(AI_ONBOARDING_KEY, "1");
+  };
+
+  const handleAIButtonClick = () => {
+    router.push("/ai");
+  };
+
   return (
-    <div className="flex items-center justify-between relative z-30 w-full mb-6">
-      {/* Logo */}
-      <div className="flex-shrink-0">
-        <a href="/">
-          <img
-            src="/Logo.svg"
-            alt="Logo"
-            className="w-14 h-14 object-contain"
-          />
-        </a>
-      </div>
-
-      {/* Profile Area */}
-      <div className="relative">
-        <motion.button
-          whileTap={{ scale: 0.92 }}
-          onClick={() => setShowDropdown((v) => !v)}
-          className="flex items-center justify-center rounded-full"
-        >
-          <img
-            alt="Profile Image"
-            src="/Profile User.svg"
-            className="w-8 h-8 rounded-full object-cover"
-          />
-        </motion.button>
-
-        <AnimatePresence>
-          {showDropdown && (
-            <ProfileDropdown
-              user={user}
-              onClose={() => setShowDropdown(false)}
-              onLogout={onLogout}
-              onGoProfile={() => router.push("/profile")}
-              onGoSaved={() => router.push("/saved")}
+    <>
+      {/* ── Navbar ── */}
+      {/*
+        z-index hierarchy:
+          navbar wrapper  → z-30
+          dropdown        → z-50  (portal would be ideal but this works
+                                   as long as no sibling has a higher stacking context)
+        The dropdown is positioned relative to `.relative` on the profile button wrapper,
+        so it naturally layers above the page content below the navbar.
+      */}
+      <div className="flex items-center justify-between relative z-30 w-full mb-6">
+        {/* Logo — left in RTL layout */}
+        <div className="flex-shrink-0">
+          <a href="/">
+            <img
+              src="/Logo.svg"
+              alt="Logo"
+              className="w-14 h-14 object-contain"
             />
-          )}
-        </AnimatePresence>
+          </a>
+        </div>
+
+        {/* Right cluster: AI button + profile */}
+        <div className="flex items-center gap-2.5">
+          {/* AI Button */}
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={handleAIButtonClick}
+            className="flex items-center justify-center w-9 h-9 rounded-full text-base"
+            style={{
+              backgroundColor: "var(--color-forest)",
+              color: "var(--color-cream)",
+              boxShadow: "0 2px 10px rgba(18,30,23,0.18)",
+            }}
+            aria-label="مساعد الذكاء الاصطناعي"
+          >
+            🤖
+          </motion.button>
+
+          {/* Profile */}
+          <div className="relative">
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={() => setShowDropdown((v) => !v)}
+              className="flex items-center justify-center rounded-full"
+            >
+              <img
+                alt="Profile Image"
+                src="/Profile User.svg"
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            </motion.button>
+
+            <AnimatePresence>
+              {showDropdown && (
+                <ProfileDropdown
+                  user={user}
+                  onClose={() => setShowDropdown(false)}
+                  onLogout={onLogout}
+                  onGoProfile={() => router.push("/profile")}
+                  onGoSaved={() => router.push("/saved")}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* ── AI Onboarding Modal ── rendered outside navbar flow */}
+      {showAIModal && <AIOnboardingModal onClose={handleCloseAIModal} />}
+    </>
   );
 }
