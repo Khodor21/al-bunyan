@@ -43,7 +43,7 @@ function FeaturedTrackCard({
       {/* Image */}
       <div
         className="relative w-full rounded-md overflow-hidden"
-        style={{ aspectRatio: "1/1" }}
+        style={{ aspectRatio: "39/50" }}
       >
         {track.image ? (
           <Image

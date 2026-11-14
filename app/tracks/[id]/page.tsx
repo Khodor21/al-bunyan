@@ -115,7 +115,7 @@ export default function TrackDetailPage({ params }: PageProps) {
         className="flex flex-col items-center px-6 text-center z-10 mb-8"
       >
         {track.image && (
-          <div className="relative w-[240px] h-[240px] rounded-xl overflow-hidden mb-4 shadow-sm">
+          <div className="relative w-[240px] h-[307px] rounded-xl overflow-hidden mb-4 shadow-sm">
             <Image
               src={track.image}
               alt={track.title}
