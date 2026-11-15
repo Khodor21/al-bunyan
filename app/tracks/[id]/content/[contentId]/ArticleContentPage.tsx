@@ -153,7 +153,7 @@ export default function ArticleContentPage({
           className="mb-8"
         >
           <h1
-            className="text-lg leading-relaxed mb-2"
+            className="text-2xl leading-relaxed mb-2"
             style={{ fontFamily: "var(--font-sans-medium)" }}
           >
             {article.title}
@@ -179,7 +179,7 @@ export default function ArticleContentPage({
             >
               {section.heading && (
                 <h2
-                  className="text-sm"
+                  className="text-md"
                   style={{
                     fontFamily: "var(--font-sans-medium)",
                     color: "var(--color-forest)",
@@ -189,11 +189,11 @@ export default function ArticleContentPage({
                 </h2>
               )}
               <p
-                className="text-sm"
+                className="text-md"
                 style={{
-                  fontFamily: "var(--font-sans-light)",
-                  opacity: 0.82,
-                  lineHeight: "2",
+                  fontFamily: "var(--font-sans-regular)",
+                  // opacity: 0.82,
+                  lineHeight: "1.6",
                   whiteSpace: "pre-wrap",
                 }}
               >
