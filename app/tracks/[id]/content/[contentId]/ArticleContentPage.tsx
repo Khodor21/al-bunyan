@@ -96,6 +96,7 @@ export default function ArticleContentPage({
       style={{
         backgroundColor: "var(--color-cream)",
         color: "var(--color-darkest)",
+        fontVariantLigatures: "none",
       }}
     >
       {/* Top bar */}

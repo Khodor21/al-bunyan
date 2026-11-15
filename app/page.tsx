@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -132,22 +130,22 @@ function HomeScreen({
           <div className="grid grid-cols-2 gap-2 w-full mx-auto text-center">
             {[
               {
-                label: "المسارات المنهجية",
+                label: "المسارات المنهجيــة",
                 emoji: "1f9e0",
                 action: () => router.push("/tracks"),
               },
               {
-                label: "مقالات البنيان",
+                label: "مقالات البنيــــــان",
                 emoji: "1f4dd",
                 action: () => router.push("/articles"),
               },
               {
-                label: "اقتباسات الأعلام ",
+                label: "اقتباســــــات الأعلام ",
                 emoji: "1f4dc",
                 action: () => setShowQuotes(true),
               },
               {
-                label: "ترشيحات البنيان",
+                label: "ترشيحـات البنيـان",
                 emoji: "1f3a7",
                 action: () => router.push("/recommendations"),
               },
